@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Arabisch Letterbord</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0E7A63">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Letterbord">
 <script>/* Laadt surahs.js als die naast deze pagina staat (GitHub- en offline-versie). */
 if (!/claude|anthropic/.test(location.hostname)) document.write('<script src="firebase-config.js?v=' + Date.now() + '"><\/script><script src="surahs.js?v=' + Date.now() + '"><\/script>');</script>
 <style>
@@ -678,7 +684,9 @@ async function connectFirebase(){
     const base = "https://www.gstatic.com/firebasejs/10.12.2/";
     const [appM, authM, fs] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
     const app = appM.initializeApp(window.FIREBASE_CONFIG);
-    await authM.signInAnonymously(authM.getAuth(app));
+    const auth = authM.getAuth(app);
+    if (auth.authStateReady) await auth.authStateReady();
+    if (!auth.currentUser) await authM.signInAnonymously(auth);
     let db;
     try { db = fs.initializeFirestore(app, {localCache: fs.persistentLocalCache()}); } catch(e) { db = fs.getFirestore(app); }
     cloud = {fs, ref: n => fs.doc(db, "gezin", window.GEZIN_ID, "data", n)};
@@ -701,7 +709,11 @@ async function connectFirebase(){
       }, () => { store.status = "fire-error"; updateSaveStatus(); });
     }
     store.status = "fire";
-  } catch(e) { cloud = null; store.status = "fire-error"; }
+  } catch(e) {
+    cloud = null; store.status = "fire-error";
+    /* Geen internet bij het opstarten? Probeer opnieuw zodra er weer verbinding is. */
+    window.addEventListener("online", () => { if (!cloud) connectFirebase(); }, {once:true});
+  }
   updateSaveStatus();
 }
 
@@ -1705,5 +1717,6 @@ if (fileSurahsChanged) persist("woorden");
 renderWho();
 if (window.FIREBASE_CONFIG && window.GEZIN_ID) connectFirebase(); else connect();
 </script>
+<script>if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});</script>
 </body>
 </html>

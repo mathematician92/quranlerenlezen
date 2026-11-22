@@ -24,3 +24,12 @@ In de app zie je onderaan bij Ouders of de verbinding met Firebase werkt.
 
 KFGQPC Uthmanic Script Hafs (King Fahd Glorious Quran Printing Complex, vrij te gebruiken en verspreiden, niet aanpassen),
 Baloo 2 en Pixelify Sans (SIL Open Font License, zie `fonts/`).
+
+## Als app installeren
+
+- **Android (Chrome):** open de website, tik op ⋮ (rechtsboven) → **App installeren** of **Toevoegen aan startscherm**.
+- **Samsung Internet:** menu ☰ → **Pagina toevoegen aan** → **Startscherm**.
+- **iPhone/iPad (Safari):** tik op het deel-icoon → **Zet op beginscherm**.
+- **Laptop (Chrome/Edge):** klik in de adresbalk op het installeer-icoontje, of menu → **Apps** → **Deze site installeren als app**.
+
+De app werkt daarna ook zonder internet. Nieuwe versies worden automatisch opgehaald zodra er internet is.
