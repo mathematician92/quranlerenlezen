@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arabisch Letterbord</title>
+<script>/* Laadt surahs.js als die naast deze pagina staat (GitHub- en offline-versie). */
+if (!/claude|anthropic/.test(location.hostname)) document.write('<script src="firebase-config.js?v=' + Date.now() + '"><\/script><script src="surahs.js?v=' + Date.now() + '"><\/script>');</script>
+<style>
+@font-face{font-family:"KFGQPC Hafs";src:url("fonts/kfgqpc-hafs.otf") format("opentype");font-display:swap}
+@font-face{font-family:"Baloo 2";font-weight:500;src:url("fonts/baloo-2-latin-500-normal.woff2") format("woff2")}
+@font-face{font-family:"Baloo 2";font-weight:600;src:url("fonts/baloo-2-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Baloo 2";font-weight:700;src:url("fonts/baloo-2-latin-700-normal.woff2") format("woff2")}
+@font-face{font-family:"Baloo 2";font-weight:800;src:url("fonts/baloo-2-latin-800-normal.woff2") format("woff2")}
+@font-face{font-family:"Pixelify Sans";font-weight:500;src:url("fonts/pixelify-sans-latin-500-normal.woff2") format("woff2")}
+@font-face{font-family:"Pixelify Sans";font-weight:700;src:url("fonts/pixelify-sans-latin-700-normal.woff2") format("woff2")}
+/* Layout: één scherm. Bovenaan de opdracht, in het midden het woord dat het kind bouwt, onderaan het letterbord. */
+:root{
+  --paper:#EEF3EF;
+  --card:#FFFFFF;
+  --ink:#1B2A27;
+  --muted:#5B6B66;
+  --accent:#0E7A63;
+  --accent-soft:#D6EEE6;
+  --sun:#F2B01E;
+  --sun-soft:#FFF1CC;
+  --good:#2A9147;
+  --good-soft:#DDF3E3;
+  --bad:#CF3F55;
+  --bad-soft:#FBE1E5;
+  --line:#D3DDD8;
+  --key-shadow:#BCCAC3;
+  --f-ui:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --f-ar:"KFGQPC Hafs","Amiri Quran","Noto Naskh Arabic","Amiri","Geeza Pro","Traditional Arabic",serif;
+  --r:16px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-ui);font-size:18px;line-height:1.35;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.ar{font-family:var(--f-ar);font-feature-settings:"kern"}
+[hidden]{display:none!important}
+
+#app{height:100%;display:grid;grid-template-rows:auto 1fr}
+header{display:flex;align-items:center;gap:16px;padding:10px 20px;background:var(--card);border-bottom:2px solid var(--line)}
+.brand{font-weight:800;font-size:22px;color:var(--accent);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand .ar{font-size:26px}
+.hmid{flex:1;display:flex;justify-content:center;align-items:center;gap:6px;min-width:0;overflow:hidden}
+.dot{font-size:24px;line-height:1;color:var(--line)}
+.dot.now{color:var(--accent)}
+.dot.gold{color:var(--sun)}
+.dot.silver{color:#9AA8A3}
+.hbtn{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:6px 14px;font-weight:700;font-size:16px;white-space:nowrap}
+.fsi{font-size:18px;line-height:1}
+.hold{position:relative;overflow:hidden}
+.hold .fill{position:absolute;inset:0;background:var(--accent-soft);transform-origin:left;transform:scaleX(0)}
+.hold span{position:relative}
+.hold.holding .fill{transition:transform 1.6s linear;transform:scaleX(1)}
+.holdtip{font-size:13px;color:var(--muted);white-space:nowrap}
+
+main{min-height:0;overflow:auto}
+.view{height:100%}
+
+/* ---------- start ---------- */
+.start{max-width:980px;margin:0 auto;padding:28px 20px 40px;display:flex;flex-direction:column;gap:22px}
+.start h1{margin:0;font-size:40px;line-height:1.1;text-wrap:balance}
+.start h2{margin:0 0 8px;font-size:22px;color:var(--muted);font-weight:700}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.mode{border:3px solid var(--line);background:var(--card);border-radius:20px;padding:18px;text-align:left;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 0 var(--key-shadow)}
+.mode b{font-size:24px}
+.mode small{font-size:17px;color:var(--muted)}
+.mode .ex{font-size:40px;text-align:center;padding:6px 0;color:var(--accent);min-height:64px}
+.mode.on{border-color:var(--accent);background:var(--accent-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 18px;font-weight:700}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.go{align-self:flex-start;background:var(--accent);color:#fff;border:0;border-radius:18px;padding:14px 40px;font-size:28px;font-weight:800;box-shadow:0 5px 0 #075443}
+.go:active{transform:translateY(3px);box-shadow:0 2px 0 #075443}
+.note{color:var(--muted);font-size:16px}
+.warn{background:var(--sun-soft);border-radius:12px;padding:10px 14px}
+
+/* ---------- wie ---------- */
+.who{max-width:1100px;margin:0 auto;padding:40px 20px;display:flex;flex-direction:column;gap:26px;align-items:center}
+.who h1{font-size:44px;margin:0;text-align:center}
+.whos{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;width:100%}
+.whob{background:var(--card);border:3px solid var(--line);border-radius:24px;padding:26px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 6px 0 var(--key-shadow);text-align:center}
+.whob:active{transform:translateY(4px);box-shadow:0 2px 0 var(--key-shadow)}
+.whob b{font-size:30px;line-height:1.15}
+.whob small{color:var(--muted);font-size:16px}
+.whoicon{width:96px;height:96px;display:flex;align-items:center;justify-content:center}
+.whoicon .ar{font-size:46px;color:var(--accent)}
+.onemode{display:flex;align-items:center;gap:18px;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:14px 20px;max-width:640px}
+.onemode b{font-size:26px}
+.profrow{display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.gamechecks{display:flex;flex-wrap:wrap;gap:8px 18px;padding-top:24px}
+.gamechecks .toggle{font-weight:600;font-size:16px}
+/* ---------- play ---------- */
+.play{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;padding:12px 20px 14px;max-width:1280px;margin:0 auto}
+.prompt{background:var(--card);border-radius:var(--r);border:2px solid var(--line);padding:8px 18px;display:flex;align-items:center;gap:18px;min-height:clamp(84px,14vh,130px)}
+.prompt .lbl{font-weight:700;color:var(--muted);font-size:18px;white-space:nowrap}
+.prompt .target{flex:1;text-align:center;font-size:clamp(40px,8vh,76px);line-height:1.9;direction:rtl}
+.prompt .nl{flex:1;text-align:center;font-size:clamp(36px,7vh,60px);font-weight:800;color:var(--accent)}
+.prompt .q{flex:1;text-align:center;font-size:24px;color:var(--muted);font-weight:700}
+.bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden;width:160px}
+.bar i{display:block;height:100%;background:var(--sun);transform-origin:left}
+.small{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:6px 12px;font-weight:700;font-size:16px}
+
+.mid{min-height:0;overflow:auto}
+.hoofdtxt{text-align:center;padding:0 8px}
+.hoofdtxt .wbad{color:var(--bad);background:var(--bad-soft);border-radius:8px}
+.hoofdtxt .wgood{color:var(--good)}
+.prompt.slim{min-height:0;padding:6px 18px}
+.built.long{font-size:clamp(32px,6vh,56px);white-space:normal;line-height:2.1;max-width:100%}
+.tile.sp{background:transparent;border-style:dashed;min-width:40px}
+.build{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:stretch}
+.slate{background:var(--card);border-radius:var(--r);border:2px solid var(--line);padding:6px 14px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.built{font-size:clamp(46px,10vh,90px);line-height:1.9;direction:rtl;min-height:1.9em;text-align:center;white-space:nowrap}
+.built.ok{color:var(--good)}
+.placeholder{font-family:var(--f-ui);font-size:22px;color:var(--muted);line-height:clamp(75px,16vh,145px)}
+.tiles{display:flex;flex-direction:row;gap:8px;direction:rtl;flex-wrap:wrap;justify-content:center;min-height:62px}
+.tile{border:2px solid var(--line);background:var(--paper);border-radius:12px;padding:0 10px 2px;min-width:58px;display:flex;flex-direction:column;align-items:center;line-height:1}
+.tile .g{font-size:32px;line-height:1.9}
+.tile .f{font-family:var(--f-ui);font-size:12px;color:var(--muted);direction:ltr}
+.tile.sel{border-color:var(--sun);background:var(--sun-soft);box-shadow:0 0 0 3px var(--sun)}
+.tile.good{border-color:var(--good);background:var(--good-soft)}
+.tile.bad{border-color:var(--bad);background:var(--bad-soft)}
+.tile.ghost{opacity:.85;cursor:default}
+.side{display:flex;flex-direction:column;gap:8px;width:190px}
+.btn{border:0;border-radius:16px;padding:10px 14px;font-weight:800;font-size:20px;box-shadow:0 4px 0 var(--key-shadow);background:var(--card);border:2px solid var(--line)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--key-shadow)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 4px 0 #075443;font-size:26px;flex:1}
+.btn.next{background:var(--sun);border-color:var(--sun);color:var(--ink);box-shadow:0 4px 0 #B5800C;font-size:24px;flex:1}
+.feedback{min-height:30px;text-align:center;font-weight:700;font-size:19px}
+.feedback.good{color:var(--good)}
+.feedback.bad{color:var(--bad)}
+.hints{margin:2px 0 0;padding:0;list-style:none;font-size:17px;font-weight:600;color:var(--ink);text-align:center}
+.linkbtn{border:0;background:none;color:var(--accent);font-weight:800;text-decoration:underline;padding:0 6px;font-size:17px}
+.answer{display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;font-weight:700;color:var(--muted)}
+
+.board{display:flex;flex-direction:column;gap:8px;min-height:0;justify-content:flex-end}
+.board.locked{opacity:.35;pointer-events:none}
+.letters{display:grid;grid-template-columns:repeat(14,1fr);gap:7px;direction:rtl}
+.row2{display:grid;grid-template-columns:9fr 13fr;gap:18px;direction:rtl}
+.extras{display:grid;grid-template-columns:repeat(9,1fr);gap:7px;direction:rtl}
+.harakat{display:grid;grid-template-columns:repeat(13,1fr);gap:7px;direction:rtl}
+.key{height:clamp(46px,7.6vh,72px);border:2px solid var(--line);background:var(--card);border-radius:12px;box-shadow:0 4px 0 var(--key-shadow);font-family:var(--f-ar);font-size:clamp(26px,4.6vh,40px);line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 var(--key-shadow)}
+.key.ex{background:#F7FAF8}
+.key.mk{flex-direction:column;gap:0;background:var(--accent-soft);border-color:#B5DCCF}
+.key.mk .m{font-size:clamp(26px,4.4vh,38px);line-height:1.2}
+.key.mk .n{font-family:var(--f-ui);font-size:10px;white-space:nowrap;color:var(--muted);line-height:1}
+.key.on{background:var(--sun-soft);border-color:var(--sun)}
+
+.overlay{position:fixed;inset:0;background:rgba(27,42,39,.35);display:flex;align-items:flex-end;justify-content:center;padding-bottom:12vh;z-index:10}
+.pop{background:var(--card);border-radius:24px;padding:18px 22px 22px;box-shadow:0 14px 40px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:12px;align-items:center}
+.pop p{margin:0;font-weight:700;color:var(--muted)}
+.forms{display:flex;gap:14px;direction:rtl}
+.formbtn{width:132px;height:150px;border:3px solid var(--line);background:var(--paper);border-radius:18px;box-shadow:0 5px 0 var(--key-shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0}
+.formbtn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--key-shadow)}
+.formbtn .g{font-family:var(--f-ar);font-size:58px;line-height:1.9}
+.formbtn .f{font-weight:800;font-size:20px}
+
+/* ---------- round end ---------- */
+.done{max-width:760px;margin:0 auto;padding:60px 20px;text-align:center;display:flex;flex-direction:column;gap:18px;align-items:center}
+.done h1{font-size:46px;margin:0}
+.bigstars{font-size:48px;letter-spacing:4px;line-height:1.2}
+.bigstars .gold{color:var(--sun)} .bigstars .silver{color:#9AA8A3} .bigstars .none{color:var(--line)}
+
+/* ---------- parent ---------- */
+.parent{max-width:1080px;margin:0 auto;padding:22px 20px 60px;display:flex;flex-direction:column;gap:18px}
+.parent h1{margin:0;font-size:32px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:6px 18px;font-weight:700}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:var(--r);padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.panel h2{margin:0;font-size:22px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-weight:700;font-size:16px}
+.field input,.field select{font:inherit;font-size:18px;padding:8px 12px;border:2px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.field input.arin{font-family:var(--f-ar);font-size:30px;direction:rtl;padding:2px 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.minikb{display:grid;grid-template-columns:repeat(23,1fr);gap:5px;direction:rtl}
+.minikb button{height:44px;border:1.5px solid var(--line);background:var(--paper);border-radius:8px;font-family:var(--f-ar);font-size:24px;padding:0}
+.minikb button.mk{background:var(--accent-soft)}
+.minikb button.bs{font-family:var(--f-ui);font-size:18px;grid-column:span 2}
+.preview{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn2{border:2px solid var(--accent);background:var(--accent);color:#fff;border-radius:12px;padding:8px 18px;font-weight:800}
+.btn2.ghost{background:#fff;color:var(--accent)}
+.btn2.danger{background:var(--bad);border-color:var(--bad)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:14px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+td.arw{font-family:var(--f-ar);font-size:28px;direction:rtl;text-align:right;white-space:nowrap}
+.tblwrap{overflow-x:auto}
+.grp{font-weight:800;color:var(--accent);padding-top:14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat{background:var(--paper);border-radius:14px;padding:14px 16px}
+.stat b{display:block;font-size:34px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:15px;font-weight:600}
+.hardl{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.hl{background:var(--paper);border-radius:14px;padding:8px 12px;display:flex;gap:12px;align-items:center}
+.hl .ar{font-size:38px;line-height:1.9;min-width:36px;text-align:center}
+.hl small{font-size:14px;color:var(--muted);line-height:1.3}
+.pill{display:inline-block;border-radius:999px;padding:1px 10px;font-size:14px;font-weight:700}
+.pill.ok{background:var(--good-soft);color:var(--good)}
+.pill.mid{background:var(--sun-soft);color:#8A5D00}
+.pill.low{background:var(--bad-soft);color:var(--bad)}
+.pill.new{background:var(--paper);color:var(--muted)}
+.save{font-size:14px;color:var(--muted)}
+.toggle{display:flex;align-items:center;gap:10px;font-weight:700}
+.toggle input{width:22px;height:22px}
+
+/* ---------- mijnrace ---------- */
+.race{height:100%;display:grid;grid-template-rows:auto 1fr;gap:12px;padding:12px 20px 16px;max-width:1280px;margin:0 auto}
+.px{font-family:"Pixelify Sans",var(--f-ui)}
+.mine{position:relative;height:clamp(180px,31vh,270px);border:4px solid #3B2A1E;border-radius:6px;overflow:hidden;
+  background:linear-gradient(#86CDF3 0 22%, #62B23F 22% 28%, #8B5A2B 28% 34%, transparent 34%),
+  repeating-conic-gradient(#7B7B7B 0 25%, #6C6C6C 0 50%) 0 0/28px 28px}
+.lane{position:absolute;left:14px;right:34px;height:33%}
+.lane.top{top:35%}
+.lane.bot{bottom:2%}
+.rail{position:absolute;left:0;right:0;bottom:2px;height:8px;background:repeating-linear-gradient(90deg,#5B3B1F 0 6px,#A7A7A7 6px 26px);border-top:2px solid #C9C9C9}
+.cart{position:absolute;bottom:8px;width:clamp(58px,10vh,84px);aspect-ratio:1;transition:left .55s cubic-bezier(.2,.8,.3,1.2)}
+.cart.rv{transition:none}
+.cart svg,.gem svg,.ex svg,.bigsvg svg{width:100%;height:100%;display:block}
+.ctag{position:absolute;left:50%;top:-20px;transform:translateX(-50%);font-family:"Pixelify Sans",var(--f-ui);font-weight:700;font-size:15px;line-height:1;color:#fff;padding:3px 7px;border-radius:4px;white-space:nowrap}
+.ctag.robo{background:#7B4FD1}
+.ctag.me{background:#E0861A}
+.tag{display:none;position:absolute;right:4px;top:-2px;font-size:14px;font-weight:700;color:#fff;background:rgba(0,0,0,.45);padding:0 8px;border-radius:4px}
+.gem{position:absolute;bottom:22px;width:18px;height:18px;transform:translateX(-50%);animation:bob 1.6s ease-in-out infinite}
+.gem.got{opacity:0;transform:translate(-50%,-30px) scale(1.4);transition:all .5s}
+.finish{position:absolute;right:6px;top:34%;bottom:0;width:18px;background:repeating-conic-gradient(#fff 0 25%, #222 0 50%) 0 0/18px 18px;border-left:2px solid #222}
+.count{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:72px;color:#fff;text-shadow:4px 4px 0 #3B2A1E;font-weight:700}
+.quest{background:#fff;border:4px solid #3B2A1E;border-radius:6px;box-shadow:inset -6px -6px 0 rgba(0,0,0,.07);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px 16px;min-height:0}
+.quest .ask{margin:0;font-size:24px;font-weight:700;text-align:center}
+.quest .ask .ar{font-size:40px;color:var(--accent);vertical-align:middle}
+.gapword{display:inline-flex;align-items:center;direction:rtl;font-size:clamp(52px,10vh,96px);line-height:1.9}
+.gapword.ok{color:var(--good)}
+.gap{display:inline-flex;align-items:center;justify-content:center;width:.85em;height:1em;border:4px dashed var(--sun);background:var(--sun-soft);border-radius:6px;margin:0 .06em;font-family:"Pixelify Sans",var(--f-ui);font-size:.7em;color:#B5800C;animation:pulse 1.2s ease-in-out infinite}
+.opts{display:flex;gap:16px;direction:rtl;flex-wrap:wrap;justify-content:center}
+.opt{width:clamp(110px,15vh,150px);height:clamp(118px,17vh,160px);background:#C9CED6;border:4px solid #3A3F47;border-radius:4px;box-shadow:inset 5px 5px 0 #E7EBF0,inset -5px -5px 0 #8C939C;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0}
+.opt:active{transform:translateY(3px)}
+.opt .g{font-family:var(--f-ar);font-size:clamp(44px,7vh,64px);line-height:1.8}
+.opt .f{font-family:"Pixelify Sans",var(--f-ui);font-size:20px;font-weight:700}
+.opt.wrong{background:#F2B8BF;opacity:.55;box-shadow:none}
+.opt.right{background:#9BE07F;box-shadow:inset 5px 5px 0 #CFF5BF,inset -5px -5px 0 #5FAE44}
+.bigletter{font-family:var(--f-ar);font-size:clamp(90px,17vh,160px);line-height:1.5;color:var(--ink)}
+.bigletter.ok{color:var(--good)}
+.spark{position:fixed;width:10px;height:10px;pointer-events:none;z-index:20;animation:spark .9s ease-out forwards}
+@keyframes spark{0%{transform:translate(0,0) scale(1);opacity:1}70%{opacity:1}100%{transform:translate(var(--dx),calc(var(--dy) + 30px)) scale(.6);opacity:0}}
+.opt.big1{width:clamp(120px,18vh,170px);height:clamp(120px,18vh,170px)}
+.opt.big1 .g{font-size:clamp(60px,10vh,90px)}
+.model{display:flex;align-items:center;gap:16px}
+.model .lbl{font-weight:700;color:var(--muted);font-size:18px}
+.target2{font-size:clamp(38px,7vh,64px);line-height:1.8;direction:rtl}
+.pieces{gap:10px;max-width:1000px}
+.piece{width:clamp(84px,11vh,112px);height:clamp(96px,13vh,124px)}
+.piece .g{font-size:clamp(36px,5.6vh,52px)}
+.piece .f{font-size:15px}
+.opt.used{visibility:hidden}
+.msg{min-height:28px;font-weight:700;font-size:20px;color:var(--bad)}
+.msg.good{color:var(--good)}
+.shake{animation:shake .35s}
+.result{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:30px 10px}
+.result h1{font-family:"Pixelify Sans",var(--f-ui);font-size:52px;margin:0;color:#3B2A1E}
+.bigsvg{width:120px;height:120px}
+.gemcount{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:20px}
+.gemcount span{width:24px;height:24px;display:inline-block}
+.gemcount span svg{width:100%;height:100%}
+@keyframes bob{50%{transform:translate(-50%,-4px)}}
+@keyframes pulse{50%{background:#FFE7A3}}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.modes{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+@media (max-width:980px){
+  .letters{grid-template-columns:repeat(7,1fr)}
+  .row2{grid-template-columns:1fr}
+  .modes{grid-template-columns:1fr}
+  .side{width:150px}
+  .grid2,.stats{grid-template-columns:1fr}
+  .minikb{grid-template-columns:repeat(9,1fr)}
+  .holdtip{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand"><span class="ar" lang="ar">أ ب ت</span> Letterbord</div>
+    <div class="hmid" id="hmid"></div>
+    <button class="hbtn" id="whoBtn" hidden aria-label="Ander kind kiezen"></button>
+    <button class="hbtn" id="fsBtn" hidden aria-label="Volledig scherm"><span class="fsi" aria-hidden="true">⛶</span> <span id="fsTxt">Volledig scherm</span></button>
+    <button class="hbtn" id="stopBtn" hidden>Stoppen</button>
+    <span class="holdtip" id="holdtip">Ouders: knop 2 sec. vasthouden</span>
+    <button class="hbtn hold" id="parentBtn" aria-label="Ouders: houd 2 seconden ingedrukt"><i class="fill"></i><span>Ouders</span></button>
+  </header>
+  <main>
+    <section class="view" id="vWho"></section>
+    <section class="view" id="vStart" hidden></section>
+    <section class="view" id="vPlay" hidden></section>
+    <section class="view" id="vDone" hidden></section>
+    <section class="view" id="vRace" hidden></section>
+    <section class="view" id="vParent" hidden></section>
+  </main>
+</div>
+<div class="overlay" id="overlay" hidden></div>
+
+<script>
+"use strict";
+/* ================= Arabische letters ================= */
+const ZWJ = "‍", ZWNJ = "‌", TAT = "ـ", SHADDA = "ّ";
+const LETTERS = "ابتثجحخدذرزسشصضطظعغفقكلمنهوي".split("");
+const EXTRA = ["ء","أ","إ","آ","ٱ","ؤ","ئ","ة","ى"];
+const DAGGER = "ٰ", MADDAH = "ٓ";
+const SUKUN = "ْ", SUKUN_SHOW = "ۡ";  /* mushaf-sukun (kopje) */
+const RZ = "۟", RZ_SHOW = "ْ";        /* ronde nul boven een stille alif */
+const SWAW = "ۥ", SYA = "ۦ";
+const FLAGS = {[SHADDA]:"sh", [DAGGER]:"da", [MADDAH]:"md", [RZ]:"rz", [SWAW]:"sw", [SYA]:"sy"};
+const FLAG_KEYS = ["sh","da","md","rz","sw","sy"];
+const show_ = m => m === SUKUN ? SUKUN_SHOW : m === RZ ? RZ_SHOW : m;
+const ALL = new Set([...LETTERS, ...EXTRA]);
+const RIGHT_ONLY = new Set(["ا","د","ذ","ر","ز","و","أ","إ","آ","ٱ","ؤ","ة","ى"]); // verbinden niet naar links
+const NO_JOIN = new Set(["ء"," "]);
+const VOWELS = ["َ","ِ","ُ","ْ","ً","ٍ","ٌ"];
+const HARAKAT = [
+  {m:"َ", n:"fatha"}, {m:"ِ", n:"kasra"}, {m:"ُ", n:"damma"}, {m:"ْ", n:"sukun"},
+  {m:SHADDA, n:"shadda"}, {m:"ً", n:"fathatan"}, {m:"ٍ", n:"kasratan"}, {m:"ٌ", n:"dammatan"}, {m:DAGGER, n:"kleine alif"}, {m:MADDAH, n:"maddah"}, {m:RZ, n:"ronde nul"}, {m:SWAW, n:"kleine waw"}, {m:SYA, n:"kleine ya"}
+];
+/* Het mushaf-lettertype schrijft een losse ي zonder puntjes. Op de toets tonen we hem met puntjes, zodat hij niet lijkt op ى. */
+const DOTTED_YA = 'font-family:"Amiri Quran","Noto Naskh Arabic",serif';
+const FORM_LBL = {begin:"begin", midden:"midden", eind:"eind", los:"los"};
+const FORM_FULL = {begin:"beginvorm", midden:"middenvorm", eind:"eindvorm", los:"losse vorm"};
+const MAP_IN = {"ی":"ي","ک":"ك","ىٔ":"ئ"};
+
+const dual = c => !RIGHT_ONLY.has(c) && !NO_JOIN.has(c);
+function formsFor(c){
+  if (NO_JOIN.has(c)) return ["los"];
+  if (RIGHT_ONLY.has(c)) return ["eind","los"];
+  return ["begin","midden","eind","los"];
+}
+function expectedForm(us, i){
+  const c = us[i].l;
+  const jp = i > 0 && dual(us[i-1].l) && !NO_JOIN.has(c);
+  const jn = dual(c) && i < us.length-1 && !NO_JOIN.has(us[i+1].l);
+  return jp && jn ? "midden" : jp ? "eind" : jn ? "begin" : "los";
+}
+function parseWord(str){
+  let s = (str || "").normalize("NFKC").replace(/[ـ‌‍]/g, "").replace(/\s+/g, " ").trim();
+  for (const [a,b] of Object.entries(MAP_IN)) s = s.split(a).join(b);
+  s = s.replace(/ۡ/g, SUKUN).replace(/۠/g, RZ).replace(/[ۖ-۞ۣۢۧ-ۭ]/g, "");
+  s = s.replace(/\u08F0/g, "\u064B").replace(/\u08F1/g, "\u064C").replace(/\u08F2/g, "\u064D").replace(/\u06E4/g, MADDAH).replace(/[\u0660-\u0669\u06F0-\u06F90-9\u06DD\u06DE\uFD3E\uFD3F()\[\].,:;\u060C\u061B\u061F]/g, " ").replace(/\s+/g, " ").trim();
+  const units = [], bad = [];
+  for (const ch of s){
+    if (ch === " ") { if (units.length && !units[units.length-1].sp) units.push({l:" ", sp:true, sh:false, v:""}); }
+    else if (ALL.has(ch)) units.push({l:ch, sh:false, v:""});
+    else if (FLAGS[ch]){ if (units.length && !units[units.length-1].sp) units[units.length-1][FLAGS[ch]] = true; }
+    else if (VOWELS.includes(ch)){ if (units.length) units[units.length-1].v = ch; }
+    else bad.push(ch);
+  }
+  units.forEach(canon);
+  units.forEach((u,i) => u.f = expectedForm(units, i));
+  return {units, bad, hasHarakat: units.some(u => u.v || FLAG_KEYS.some(k => u[k]))};
+}
+const marks = u => u.sp ? "" : (u.sh ? SHADDA : "") + show_(u.v || "") + (u.da ? DAGGER : "") + (u.md ? MADDAH : "") + (u.rz ? RZ_SHOW : "") + (u.sw ? SWAW : "") + (u.sy ? SYA : "");
+/* In de mushaf zien ي en ى er aan het eind van een woord hetzelfde uit; daarom tellen ze als dezelfde letter. */
+const sameLetter = (a, b) => a === b || ((a === "ي" || a === "ى") && (b === "ي" || b === "ى"));
+/* آ wordt opgeslagen als ا met maddah, zodat beide manieren van tikken goed tellen. */
+function canon(u){ if (u.l === "آ") { u.l = "ا"; u.md = true; } return u; }
+const back = f => f === "midden" || f === "eind";
+const fwd = f => f === "begin" || f === "midden";
+/* Bouwt de tekst zó dat elke letter precies in de gekozen vorm verschijnt, ook als die vorm fout is. */
+function renderWord(us){
+  let s = "";
+  us.forEach((u,i) => {
+    const p = us[i-1], n = us[i+1];
+    if (u.sp) { s += " "; return; }
+    const joinedPrev = p && fwd(p.f) && back(u.f);
+    if (i > 0 && !joinedPrev && !p.sp) s += ZWNJ;
+    if (back(u.f) && !joinedPrev) s += ZWJ;
+    s += u.l + marks(u);
+    const joinedNext = n && fwd(u.f) && back(n.f);
+    if (fwd(u.f) && !joinedNext) s += ZWJ;
+  });
+  return s;
+}
+function tileText(u, f){
+  if (u.sp) return "␣";
+  f = f || u.f; const m = u.l + marks(u);
+  return f === "begin" ? m + TAT : f === "midden" ? TAT + m + TAT : f === "eind" ? TAT + m : m;
+}
+
+/* ================= Gegevens ================= */
+
+const DEFAULT_SETTINGS = {name:"", hideSec:5, perRound:10, sound:true, checkHarakat:true, lastMode:"overschrijven", lastGroup:"*", lastLes:"Sukūn – blad 1", raceTempo:150, raceKind:"letters"};
+const clone = o => JSON.parse(JSON.stringify(o));
+/* Kinderen en hun spellen. games: overschrijven, onthouden, zelf, hoofd, race:een, race:letters, race:bouw */
+const DEFAULT_PROFILES = [
+  {id:"mehr",  name:"Mehr Sultan",  tag:"MEHR",  icon:"book",  games:["hoofd"]},
+  {id:"ameer", name:"Ameer Hussain", tag:"AMEER", icon:"miner", games:["race:letters"]},
+  {id:"klein", name:"Amin Shah & Mohiyuddin", tag:"JIJ", icon:"gem", games:["race:een"]}
+];
+const GAME_LBL = {"overschrijven":"Overschrijven", "onthouden":"Onthouden", "zelf":"Zelf schrijven", "hoofd":"Uit het hoofd (hifz)",
+  "race:een":"Mijnrace: Eén letter", "race:letters":"Mijnrace: Letters zoeken", "race:bouw":"Mijnrace: Woord bouwen"};
+const PROF_KEYS = ["lastMode","lastGroup","raceKind","raceTempo","pos","letterSet"];
+const EMPTY_PROGRESS = () => ({words:{}, letters:{}, days:{}});
+let active = null;
+const profiles = () => state.settings.profiles || DEFAULT_PROFILES;
+const prof = () => profiles().find(x => x.id === active);
+function loadProgress(p){
+  if (!p) return;
+  if (p.profiles) state.allProgress = p.profiles;
+  else if (p.words) state.allProgress = {ameer: Object.assign(EMPTY_PROGRESS(), p)}; /* oude voortgang hoort bij Ameer */
+  if (active) state.progress = state.allProgress[active] = state.allProgress[active] || EMPTY_PROGRESS();
+}
+const state = {
+  allProgress: {},
+  words: [],
+  progress: {words:{}, letters:{}, days:{}},
+  settings: clone(DEFAULT_SETTINGS)
+};
+
+/* Woorden uit het lesboek (les 1: Sukūn), overgenomen van de foto's. */
+const BOOK = [
+  ["Sukūn – blad 1", "أَنتَ|ٱِهْدِ|بَعْدُ|بَطْشَ|سَعَى|كُنتُ|لَسْتَ|قُرْءَانٌ|بَرْدًا|مِرْيَةٍ|ٱِرْجِعْ|إِرْبَةِ|مِصْرَ|قِطْرٍ|قِرْطَاسٍ|مِرْصَادِ|فِرْقَةٍ|مَنِ ٱرْتَضَى|ٱِرْحَمْ|ٱِرْتَبْتُمْ|أَنذِرْ|خَيْرٌ|فَٱصْبِرْ|صَبْرًا|يَسِيرٌ|غُلْبًا|فَصْلٌ|قَدْحًا|قَضْبًا|كَأْسًا"],
+  ["Sukūn – blad 2", "كَدْحًا|لَغْوًا|مِسْكٌ|نَخْلًا|نَشْطًا|نَّفْسٍ|نَقْعًا|يُسْرًا|أَبْقَىٰ|عَدْنٍ|عَشْرٍ|تَخْشَىٰ|يَسْعَىٰ|يَتْلُوا۟|يَدْعُوا۟|تَجْرِى|يَهْدِى|يُغْنِى|أَلْقَتْ|أَمْهِلْ|ٱِقْرَأْ|فَٱرْغَبْ|فَٱنصَبْ|وَٱنْحَرْ|مِنْ هَادٍ|مِنْ عَلَقٍ|أَنْعَمْتَ|مَنْ ءَامَنَ|مِنْ|خِلَافٍ|أَلْهَمَ|أَنشَرَ|أَنقَضَ|دَمْدَمَ|عَسْعَسَ|أَعْبُدُ|نَعْبُدُ|تَخْرُجُ|تَحْسَبُ|يَشْرَبُ|يَشْهَدُ|تَرْهَقُ|تَعْرِفُ|أُقْسِمُ|يُبْدِئُ|دُنْيَا|قِنْوَانٌ|صِنْوَانٌ|بُنْيَانٌ"],
+  ["Sukūn – blad 3", "حُشِرَتْ|سُطِحَتْ|كُشِطَتْ|نُشِرَتْ|بَلْ رَانَ|أَثَرْنَ|وَسَطْنَ|فَرَغْتَ|تَأْتُونَ|يُسْقَوْنَ|يَفْعَلُونَ|يَعْمَلُونَ|يَعْلَمُونَ|يَضْحَكُونَ|يَكْسِبُونَ|يَدْخُلُونَ|يَنظُرُونَ|رَأَى|مَنْ رَاقٍ|أَنذَرْنَا|أَنزَلْنَا|خَلَقْنَا|رَفَعْنَا|وَضَعْنَا|نُطْفَةٍ|عِبْرَةً|زَجْرَةٌ|تَذْكِرَةٌ|مُسْفِرَةٌ|مُؤْصَدَةٌ|مَا يَشَآءُ|ٱِسْتَطَعْتُ|شَهْرٍ|فَجْرٍ|قَدْرٍ|زَكَوٰةً"],
+  ["Sukūn – blad 4", "صَلَوٰةً|بَٰلِغِهِۦ|مَمْنُونٍ|مَحْفُوظٍ|نِسَآءً|طُوًى|مَسْرُورًا|مَآءً|أَبْوَٰبًا|أَزْوَٰجًا|أَشْتَاتًا|إِطْعَٰمٌ|أَعْنَٰبًا|أَفْوَاجًا|أَلْفَافًا|قُرْءَٰنًا|ٱلْحَمْدُ|ٱِهْدِنَا|وَٱلْفَتْحُ|وَٱلْعَصْرِ|مِنَ ٱلْمُعْصِرَٰتِ|مَعَ ٱلْعُسْرِ|مَا ٱلْقَارِعَةُ|وَإِذَا ٱلْمَوْءُۥدَةُ|يَنظُرُ ٱلْمَرْءُ|كَٱلْفَرَاشِ ٱلْمَبْثُوثِ"],
+  ["Sukūn – zinnen", "كَٱلْعِهْنِ ٱلْمَنفُوشِ|لَيْلَةُ ٱلْقَدْرِ|أَخْرَجَتِ ٱلْأَرْضُ|مِنْ أَهْلِ ٱلْكِتَٰبِ|عِندَ ذِى ٱلْعَرْشِ|يَمْنَعُونَ ٱلْمَاعُونَ|وَهُوَ ٱلْغَفُورُ ٱلْوَدُودُ|ذُو ٱلْعَرْشِ ٱلْمَجِيدُ|لَقَدْ خَلَقْنَا ٱلْإِنسَٰنَ فِىٓ أَحْسَنِ تَقْوِيمٍ|أَعْطَيْنَٰكَ ٱلْكَوْثَرَ"]
+].flatMap(([les, list], gi) => list.split("|").map((ar, i) => ({id:`b${gi+1}-${i+1}`, ar, nl:"", les})));
+/* Voegt boekwoorden toe die nog niet in de lijst staan (en niet bewust verwijderd zijn). */
+function mergeBook(){
+  state.words = state.words.filter(w => !/^s\d+$/.test(w.id));  /* oude voorbeeldwoorden weg */
+  const have = new Set(state.words.map(w => w.id)), gone = new Set(state.settings.removed || []);
+  const add = BOOK.filter(w => !have.has(w.id) && !gone.has(w.id));
+  if (add.length) state.words = state.words.concat(add);
+  return add.length;
+}
+function readLocal(){
+  try {
+    const w = JSON.parse(localStorage.getItem("atb:woorden") || "null");
+    const p = JSON.parse(localStorage.getItem("atb:voortgang") || "null");
+    const s = JSON.parse(localStorage.getItem("atb:instellingen") || "null");
+    if (w && Array.isArray(w.list)) state.words = w.list;
+    loadProgress(p);
+    if (s) state.settings = Object.assign(clone(DEFAULT_SETTINGS), s);
+  } catch(e) {}
+}
+function migrate(){
+  const s = state.settings;
+  if (!s.migr1) { s.migr1 = true; (s.profiles || []).forEach(pf => { if (pf.id === "ameer") pf.games = pf.games.filter(g => g !== "race:bouw"); if (!pf.games.length) pf.games = ["race:letters"]; }); }
+}
+function splitAyat(txt){
+  return String(txt || "").split(/[\n\u06DD]+|[\u0660-\u0669\u06F0-\u06F9]+|\(\s*\d+\s*\)|\d+/).map(x => x.trim()).filter(x => parseWord(x).units.length);
+}
+/* Surahs uit het bestand surahs.js (handig op GitHub: overal te bewerken). */
+function mergeFileSurahs(){
+  const list = Array.isArray(window.SURAHS) ? window.SURAHS : null;
+  if (!list) return false;
+  const fresh = [];
+  list.forEach((sr, si) => {
+    const naam = String(sr.naam || ("Surah " + (si + 1))).trim();
+    splitAyat(sr.tekst).forEach((ar, i) => fresh.push({id:`f${si}-${i}`, ar, nl:"", les:naam, kind:"surah", file:true}));
+  });
+  const before = JSON.stringify(state.words.filter(w => w.file));
+  state.words = state.words.filter(w => !w.file).concat(fresh);
+  return before !== JSON.stringify(fresh);
+}
+readLocal();
+migrate();
+mergeBook();
+const fileSurahsChanged = mergeFileSurahs();
+
+const store = {db:null, uid:null, status:"local", writing:{}, pending:{}, timers:{}};
+const dataFor = n => n === "woorden" ? {list: state.words} : n === "voortgang" ? {profiles: state.allProgress} : state.settings;
+function persist(name){
+  if (name === "instellingen" && active) {
+    const s = state.settings; s.prof = Object.assign({}, s.prof);
+    s.prof[active] = Object.fromEntries(PROF_KEYS.map(k => [k, s[k]]));
+  }
+  try { localStorage.setItem("atb:"+name, JSON.stringify(dataFor(name))); } catch(e) {}
+  if (cloud) { clearTimeout(cloudTimers[name]); cloudTimers[name] = setTimeout(() => cloudFlush(name), 800); return; }
+  if (!store.db) return;
+  clearTimeout(store.timers[name]);
+  store.timers[name] = setTimeout(() => flush(name), 700);
+}
+async function flush(name, retry){
+  if (store.writing[name]) { store.pending[name] = true; return; }
+  store.writing[name] = true;
+  try {
+    await store.db.collection("data/users/" + store.uid).doc(name).set(clone(dataFor(name)));
+    store.status = "cloud";
+  } catch(e) {
+    if (e && e.code === "unavailable" && !retry) { store.writing[name] = false; setTimeout(() => flush(name, true), 800 + Math.random()*800); return; }
+    store.status = e && e.code === "quota_exceeded" ? "full" : "error";
+  }
+  store.writing[name] = false;
+  if (store.pending[name]) { store.pending[name] = false; flush(name); }
+  updateSaveStatus();
+}
+async function connect(){
+  if (!window.claude || typeof window.claude.use !== "function") return;
+  const timeout = new Promise(r => setTimeout(() => r("timeout"), 10000));
+  const go = (async () => {
+    const user = await window.claude.use("user");
+    const db = await window.claude.use("db");
+    if (!user || !db) return "none";
+    const uid = await user.id();
+    if (!uid) return "none";
+    const col = db.collection("data/users/" + uid);
+    const [w, p, s] = await Promise.all(["woorden","voortgang","instellingen"].map(n => col.doc(n).get()));
+    store.db = db; store.uid = uid; store.status = "cloud";
+    if (w.exists && Array.isArray(w.data().list)) state.words = clone(w.data().list);
+    if (p.exists) loadProgress(clone(p.data()));
+    if (s.exists) { state.settings = Object.assign(clone(DEFAULT_SETTINGS), clone(s.data())); migrate(); }
+    const before = state.words.length;
+    const fileChanged = mergeFileSurahs();
+    if ((mergeBook() || fileChanged || state.words.length !== before) && w.exists) persist("woorden");
+    return "ok";
+  })().catch(() => "error");
+  const r = await Promise.race([go, timeout]);
+  if (r === "ok") {
+    if (!$("#vStart").hidden) renderStart();
+    if (!$("#vWho").hidden) renderWho();
+    if (!$("#vParent").hidden) renderParent();
+  }
+  updateSaveStatus();
+}
+
+/* ================= Firebase (GitHub-versie): alles delen tussen apparaten ================= */
+let cloud = null;
+const cloudTimers = {}, cloudLast = {};
+const progName = id => "voortgang_" + id;
+/* Vaste volgorde van sleutels, zodat we onze eigen echo van Firebase herkennen. */
+const stable = v => Array.isArray(v) ? "[" + v.map(stable).join(",") + "]"
+  : v && typeof v === "object" ? "{" + Object.keys(v).filter(k => v[k] !== undefined).sort().map(k => JSON.stringify(k) + ":" + stable(v[k])).join(",") + "}"
+  : JSON.stringify(v === undefined ? null : v);
+const localPending = n => !!cloudTimers[n.startsWith("voortgang_") ? "voortgang" : n];
+function cloudPayload(name){
+  if (name === "woorden") return {list: state.words.filter(w => !w.file)};
+  if (name === "instellingen") return state.settings;
+  return null;
+}
+async function cloudWrite(docName, data){
+  const json = stable(data);
+  if (cloudLast[docName] === json) return;
+  cloudLast[docName] = json;
+  try { await cloud.fs.setDoc(cloud.ref(docName), JSON.parse(JSON.stringify(data))); store.status = "fire"; }
+  catch(e) { store.status = "fire-error"; delete cloudLast[docName]; }
+  updateSaveStatus();
+}
+function cloudFlush(name){
+  delete cloudTimers[name];
+  if (!cloud) return;
+  if (name === "voortgang") { for (const [id, p] of Object.entries(state.allProgress)) cloudWrite(progName(id), p); return; }
+  cloudWrite(name, cloudPayload(name));
+}
+function applyRemote(docName, d){
+  if (docName === "woorden" && Array.isArray(d.list)) {
+    state.words = clone(d.list); mergeBook(); mergeFileSurahs();
+    try { localStorage.setItem("atb:woorden", JSON.stringify({list: state.words})); } catch(e) {}
+  } else if (docName === "instellingen") {
+    const keep = active ? Object.fromEntries(PROF_KEYS.map(k => [k, state.settings[k]])) : {};
+    state.settings = Object.assign(clone(DEFAULT_SETTINGS), clone(d), keep, {name: state.settings.name});
+    try { localStorage.setItem("atb:instellingen", JSON.stringify(state.settings)); } catch(e) {}
+  } else if (docName.startsWith("voortgang_")) {
+    const id = docName.slice(10);
+    state.allProgress[id] = Object.assign(EMPTY_PROGRESS(), clone(d));
+    if (id === active) state.progress = state.allProgress[id];
+    try { localStorage.setItem("atb:voortgang", JSON.stringify({profiles: state.allProgress})); } catch(e) {}
+  }
+  if (!$("#vWho").hidden) renderWho();
+  else if (!$("#vStart").hidden) renderStart();
+  else if (!$("#vParent").hidden && !document.activeElement.matches("input,textarea")) renderParent();
+}
+async function connectFirebase(){
+  store.status = "fire-wait";
+  try {
+    const base = "https://www.gstatic.com/firebasejs/10.12.2/";
+    const [appM, authM, fs] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js")]);
+    const app = appM.initializeApp(window.FIREBASE_CONFIG);
+    await authM.signInAnonymously(authM.getAuth(app));
+    let db;
+    try { db = fs.initializeFirestore(app, {localCache: fs.persistentLocalCache()}); } catch(e) { db = fs.getFirestore(app); }
+    cloud = {fs, ref: n => fs.doc(db, "gezin", window.GEZIN_ID, "data", n)};
+    const names = ["woorden", "instellingen", ...profiles().map(pf => progName(pf.id))];
+    for (const n of names) {
+      fs.onSnapshot(cloud.ref(n), {includeMetadataChanges: false}, snap => {
+        if (snap.metadata.hasPendingWrites) return;
+        if (!snap.exists()) {
+          /* Eerste keer: wat er op dit apparaat staat, gaat naar Firebase. */
+          if (snap.metadata.fromCache) return;
+          if (n.startsWith("voortgang_")) { const id = n.slice(10); if (state.allProgress[id]) cloudWrite(n, state.allProgress[id]); }
+          else cloudWrite(n, cloudPayload(n));
+          return;
+        }
+        const d = snap.data(), json = stable(d);
+        if (cloudLast[n] === json || localPending(n)) return;
+        cloudLast[n] = json;
+        applyRemote(n, d);
+        store.status = "fire"; updateSaveStatus();
+      }, () => { store.status = "fire-error"; updateSaveStatus(); });
+    }
+    store.status = "fire";
+  } catch(e) { cloud = null; store.status = "fire-error"; }
+  updateSaveStatus();
+}
+
+/* ================= Hulpjes ================= */
+const $ = s => document.querySelector(s);
+function h(tag, props, ...kids){
+  const e = document.createElement(tag);
+  for (const [k,v] of Object.entries(props || {})) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (v === true) e.setAttribute(k, "");
+    else if (v !== false && v != null) e.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) { if (c == null || c === false) continue; e.append(c.nodeType ? c : document.createTextNode(String(c))); }
+  return e;
+}
+const ar = (txt, cls) => h("span", {class:"ar " + (cls||""), lang:"ar", dir:"rtl"}, txt);
+const today = () => new Date().toLocaleDateString("sv-SE");
+const uid = () => "w" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+function show(id){
+  for (const v of ["vWho","vStart","vPlay","vDone","vRace","vParent"]) $("#"+v).hidden = v !== id;
+  $("#whoBtn").hidden = !active || id === "vWho" || id === "vParent";
+  $("#stopBtn").hidden = id !== "vPlay" && id !== "vRace";
+  if (id !== "vRace") stopRaceLoop();
+  if (id !== "vPlay") $("#hmid").replaceChildren();
+}
+const groups = () => [...new Set(state.words.map(w => w.les || "Zonder les"))];
+/* Surahs (voor hifz) en woordenlessen (uit het boek) zijn gescheiden. */
+const isSurah = w => w.kind === "surah";
+const forMode = mode => w => mode === "hoofd" ? isSurah(w) : !isSurah(w);
+const groupsFor = mode => [...new Set(state.words.filter(forMode(mode)).map(w => w.les || "Zonder les"))];
+
+/* ================= Geluid ================= */
+let ac = null;
+function actx(){
+  if (!state.settings.sound) return null;
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch(e) { return null; }
+  return ac;
+}
+function tone(freq, start, dur, type, vol){
+  const a = actx(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = type || "sine"; o.frequency.value = freq;
+  const t = a.currentTime + start;
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol || .12, t + .012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + .05);
+}
+const sfx = {
+  tap(){ tone(880, 0, .07, "triangle", .07); },
+  pick(){ tone(660, 0, .09, "triangle", .09); tone(990, .06, .1, "triangle", .08); },
+  mark(){ tone(1250, 0, .06, "sine", .06); },
+  del(){ tone(300, 0, .09, "triangle", .08); },
+  good(){ [523,659,784,1047].forEach((f,i) => tone(f, i*.09, .3, "triangle", .13)); },
+  bad(){ tone(392, 0, .2, "sine", .11); tone(311, .17, .32, "sine", .11); },
+  round(){ [523,659,784,659,784,1047,1319].forEach((f,i) => tone(f, i*.11, .32, "triangle", .12)); }
+};
+
+/* ================= Startscherm ================= */
+const MODES = [
+  {k:"overschrijven", t:"Overschrijven", d:"Je ziet het woord. Maak het na.", ex:"كِتَاب"},
+  {k:"onthouden", t:"Onthouden", d:"Je ziet het woord even. Dan verdwijnt het. Weet jij het nog?", ex:"؟"},
+  {k:"race", t:"Mijnrace", d:"Race door de mijn tegen Robo! Bouw de woorden met de goede stukjes en verzamel diamanten.", ex:"race"},
+  {k:"hoofd", t:"Uit het hoofd", d:"Schrijf een ayah of surah uit je hoofd. Tik alleen de letters: de harakat komen vanzelf als de letter goed is.", ex:"حِفْظ"},
+  {k:"zelf", t:"Zelf schrijven", d:"Schrijf zelf wat je wilt: een woord, of een hele ayah uit de mushaf.", ex:"بِسْمِ ٱللَّهِ"}
+];
+const ROBO_SPEEDS = [[200,"Heel rustig"],[150,"Rustig"],[100,"Normaal"],[65,"Snel"],[42,"Supersnel"]];
+const LETTER_SETS = [LETTERS, LETTERS.slice(0,7), LETTERS.slice(7,14), LETTERS.slice(14,21), LETTERS.slice(21)];
+function posLine(s){
+  const len = pool(s.lastMode, s.lastGroup).length;
+  const at = getPos(s.lastGroup, len);
+  const wd = s.lastMode === "hoofd" ? "ayah" : "woord";
+  if (!len) return null;
+  return h("p", {class:"note", style:"margin:0;font-size:18px"},
+    at ? `Je gaat verder bij ${wd} ${at + 1} van ${len}. ` : `Je begint bij ${wd} 1 van ${len}. `,
+    at ? h("button", {class:"linkbtn", onclick(){ sfx.tap(); setPos(s.lastGroup, 0); renderStart(); }}, `Begin weer bij ${wd} 1`) : null);
+}
+function renderWho(){
+  active = null; show("vWho");
+  const icon = ic => h("div", {class:"whoicon"}, ic === "book" ? h("span", {class:"ar", lang:"ar"}, "حِفْظ") : svgEl(ic === "gem" ? SPRITES.gem : SPRITES.miner));
+  $("#vWho").replaceChildren(h("div", {class:"who"},
+    h("h1", null, "Wie gaat er oefenen?"),
+    h("div", {class:"whos"}, profiles().map(pf => h("button", {class:"whob", onclick(){ choose(pf.id); }},
+      icon(pf.icon), h("b", null, pf.name),
+      h("small", null, pf.games.map(g => GAME_LBL[g] || g).join(" · ")))))));
+}
+function choose(id){
+  sfx.tap();
+  active = id; const pf = prof(), s = state.settings;
+  Object.assign(s, {lastMode:"overschrijven", lastGroup:"*", raceKind:"letters", raceTempo:150, pos:{}, letterSet:0}, (s.prof || {})[id] || {});
+  s.name = pf.name;
+  state.progress = state.allProgress[id] = state.allProgress[id] || EMPTY_PROGRESS();
+  $("#whoBtn").textContent = "👤 " + pf.name.split(" ")[0] + " · wissel";
+  show("vStart"); renderStart();
+}
+function renderStart(){
+  const s = state.settings;
+  const games = (prof() || {games:Object.keys(GAME_LBL)}).games;
+  const modesOk = MODES.filter(m => games.some(g => g === m.k || g.startsWith(m.k + ":")));
+  if (!modesOk.some(m => m.k === s.lastMode)) s.lastMode = (modesOk[0] || MODES[0]).k;
+  const kindsOk = games.filter(g => g.startsWith("race:")).map(g => g.slice(5));
+  if (s.lastMode === "race" && !kindsOk.includes(s.raceKind)) s.raceKind = kindsOk[0];
+  const name = (s.name || "").trim();
+  const hifz = s.lastMode === "hoofd";
+  const gs = groupsFor(s.lastMode);
+  if (s.lastGroup !== "*" && !gs.includes(s.lastGroup)) s.lastGroup = hifz && gs.length === 1 ? gs[0] : "*";
+  const count = g => state.words.filter(forMode(s.lastMode)).filter(w => g === "*" || (w.les || "Zonder les") === g).length;
+  const noSurah = hifz && !gs.length;
+  const wrap = h("div", {class:"start"},
+    h("h1", null, name ? `Hoi ${name}!` : "Hoi!"),
+    modesOk.length < 2 ? h("div", {class:"onemode"}, s.lastMode === "race" ? h("div", {style:"width:72px;height:72px"}, svgEl(SPRITES.miner)) : h("span", {class:"ar", lang:"ar", style:"font-size:44px;color:var(--accent)"}, "حِفْظ"),
+      h("div", null, h("b", null, s.lastMode === "race" ? "Mijnrace" : (MODES.find(m => m.k === s.lastMode) || {}).t),
+        h("div", {class:"note"}, s.lastMode === "race" ? (s.raceKind === "een" ? "Zoek dezelfde letter en race tegen Robo!" : "Race door de mijn tegen Robo en verzamel diamanten!") : (MODES.find(m => m.k === s.lastMode) || {}).d))) : null,
+    modesOk.length < 2 ? null : h("div", null, h("h2", null, "Hoe wil je oefenen?"),
+      h("div", {class:"modes"}, modesOk.map(m =>
+        h("button", {class:"mode" + (s.lastMode === m.k ? " on" : ""), "aria-pressed": String(s.lastMode === m.k), onclick(){ sfx.tap(); s.lastMode = m.k; persist("instellingen"); renderStart(); }},
+          h("b", null, m.t),
+          m.k === "race" ? h("div", {class:"ex"}, h("div", {style:"width:64px;height:64px;margin:0 auto"}, svgEl(SPRITES.miner)))
+            : m.k === "onthouden" ? h("div", {class:"ex px", style:"font-size:48px;font-weight:700"}, "?")
+            : h("div", {class:"ex ar", lang:"ar"}, m.ex),
+          h("small", null, m.d))))),
+    s.lastMode === "zelf" ? h("p", {class:"note", style:"margin:0;font-size:18px"}, "Pak de mushaf of je lesboek erbij. Papa of mama laat zien wat je gaat schrijven. Met Controleer zie je of alle vormen kloppen.") :
+    h("div", {style:"display:contents"},
+    s.lastMode === "race" && kindsOk.length > 1 ? h("div", null, h("h2", null, "Welk spel?"), h("div", {class:"chips"},
+      [["een","Eén letter (beginners)"],["letters","Letters zoeken"],["bouw","Woord bouwen (met vorm en tekens)"]].filter(([k]) => kindsOk.includes(k)).map(([k,l]) =>
+        h("button", {class:"chip" + ((s.raceKind || "letters") === k ? " on" : ""), onclick(){ sfx.tap(); s.raceKind = k; persist("instellingen"); renderStart(); }}, l)))) : null,
+    s.lastMode === "race" && s.raceKind === "een"
+    ? h("div", null, h("h2", null, "Welke letters?"), h("div", {class:"chips"},
+        LETTER_SETS.map((set, n) => h("button", {class:"chip" + ((s.letterSet || 0) === n ? " on" : ""), onclick(){ sfx.tap(); s.letterSet = n; persist("instellingen"); renderStart(); }},
+          n === 0 ? "Alle letters" : h("span", {class:"ar", lang:"ar", dir:"rtl", style:"font-size:22px"}, set.map(l => h("span", {style: l === "ي" ? DOTTED_YA : null}, l + " ")))))))
+    : noSurah ? null
+    : hifz && gs.length === 1 ? h("div", null, h("h2", null, "Jouw surah"), h("div", {class:"chips"}, h("span", {class:"chip on"}, `${gs[0]} (${count(gs[0])} ayat)`)))
+    : h("div", null, h("h2", null, hifz ? "Welke surah?" : "Welke woorden?"),
+      h("div", {class:"chips"},
+        [...(hifz ? [] : [["*", "Alle woorden"]]), ...gs.map(g => [g, g])].map(([g, l]) =>
+          h("button", {class:"chip" + (s.lastGroup === g ? " on" : ""), onclick(){ sfx.tap(); s.lastGroup = g; persist("instellingen"); renderStart(); }}, `${l} (${count(g)})`))))),
+    s.lastMode === "race" ? h("div", null, h("h2", null, "Hoe snel is Robo?"), h("div", {class:"chips"},
+      ROBO_SPEEDS.map(([v,l]) => h("button", {class:"chip" + ((s.raceTempo ?? 150) === v ? " on" : ""), onclick(){ sfx.tap(); s.raceTempo = v; state.progress.raceLevel = 1; persist("instellingen"); persist("voortgang"); renderStart(); }}, l)))) : null,
+    s.lastMode !== "zelf" && !noSurah && !(s.lastMode === "race" && s.raceKind === "een") ? posLine(s) : null,
+    noSurah ? null : h("button", {class:"go", onclick: startRound}, "Beginnen ▶"),
+    h("div", {id:"startMsg"})
+  );
+  $("#vStart").replaceChildren(wrap);
+}
+
+/* ================= Oefenen ================= */
+let play = null;
+function pool(mode, group){
+  return state.words.filter(forMode(mode)).filter(w => (group === "*" || (w.les || "Zonder les") === group)
+    && parseWord(w.ar).units.length);
+}
+function wp(id){
+  const P = state.progress; P.words = P.words || {};
+  return P.words[id] = P.words[id] || {played:0, solved:0, first:0, tries:0, peeks:0, shown:0, e:{letter:0, vorm:0, haraka:0, lengte:0}, last:""};
+}
+/* Woorden komen in de volgorde van de lijst (= volgorde van het boek). Per les onthouden we waar je was. */
+function getPos(g, len){ const P = state.settings.pos || {}; const v = P[g] || 0; return len ? v % len : 0; }
+function setPos(g, v){ state.settings.pos = Object.assign({}, state.settings.pos, {[g]: v}); persist("instellingen"); }
+function pickWords(list, n, g){
+  const start = getPos(g, list.length), out = [];
+  for (let k = 0; k < n; k++) out.push(list[(start + k) % list.length].id);
+  setPos(g, (start + n) % list.length);
+  return out;
+}
+function startRound(){
+  sfx.tap();
+  const s = state.settings;
+  if (s.lastMode === "race") return startRace();
+  if (s.lastMode === "zelf") {
+    play = {mode:"zelf", queue:[], idx:0, res:[], units:[], sel:-1, result:null, showHints:false, popup:null};
+    show("vPlay"); renderPlay(); return;
+  }
+  const list = pool(s.lastMode, s.lastGroup);
+  if (!list.length) {
+    $("#startMsg").replaceChildren(h("p", {class:"warn"}, "Er zijn nog geen woorden in deze les."));
+    return;
+  }
+  play = {mode:s.lastMode, queue: pickWords(list, Math.min(s.perRound, list.length), s.lastGroup), idx:-1, res:[]};
+  show("vPlay");
+  nextWord();
+}
+function nextWord(){
+  clearTimers();
+  play.idx++;
+  if (play.idx >= play.queue.length) return endRound();
+  const w = state.words.find(x => x.id === play.queue[play.idx]);
+  if (!w) return nextWord();
+  Object.assign(play, {word:w, tgt:parseWord(w.ar), units:[], sel:-1, attempts:0, peeks:0, revealed:false, result:null, showHints:false, hidden:false, looking:false, popup:null, hint:false});
+  wp(w.id).played++; wp(w.id).last = today();
+  persist("voortgang");
+  if (play.mode === "onthouden") startLook(state.settings.hideSec);
+  renderPlay();
+}
+let timers = [];
+function clearTimers(){ timers.forEach(clearTimeout); timers = []; }
+function startLook(sec){
+  play.looking = true; play.hidden = false; play.lookSec = sec;
+  timers.push(setTimeout(() => { play.looking = false; play.hidden = true; renderPlay(); }, sec * 1000));
+}
+
+function renderHeaderDots(){
+  if (play.mode === "zelf") { $("#hmid").replaceChildren(h("span", {class:"note", style:"font-weight:700"}, "Zelf schrijven")); return; }
+  const dots = play.queue.map((id, i) => {
+    const r = play.res[i];
+    const cls = r === "gold" ? "gold" : r === "silver" ? "silver" : i === play.idx ? "now" : "";
+    return h("span", {class:"dot " + cls, "aria-hidden":"true"}, r ? "★" : i === play.idx ? "●" : "○");
+  });
+  $("#hmid").replaceChildren(h("span", {class:"note", style:"margin-right:8px"}, `Woord ${play.idx+1} van ${play.queue.length}`), ...dots);
+}
+
+function renderPrompt(){
+  const p = play, w = p.word;
+  if (p.mode === "overschrijven")
+    return h("div", {class:"prompt"}, h("span", {class:"lbl"}, "Maak dit woord na:"), h("div", {class:"target ar", lang:"ar"}, renderWord(p.tgt.units)));
+  if (p.mode === "hoofd") {
+    const list = pool("hoofd", state.settings.lastGroup);
+    const n = list.findIndex(x => x.id === w.id);
+    return h("div", {class:"prompt slim"}, h("span", {class:"lbl"}, "Uit het hoofd:"),
+      h("div", {class:"q", style:"font-size:20px"}, `${w.les || ""} · ${n >= 0 ? "deel " + (n + 1) + " van " + list.length : ""}`),
+      p.result && p.result.ok ? null : h("button", {class:"small", onclick(){ sfx.tap(); p.peeks++; wp(w.id).peeks++; persist("voortgang"); p.hint = true; renderPlay(); clearTimers(); timers.push(setTimeout(() => { p.hint = false; renderPlay(); }, 3000)); }}, "Hint: eerste woord"),
+      p.hint ? h("span", {class:"ar", lang:"ar", style:"font-size:40px;line-height:1.8"}, renderWord(splitWords(p.tgt.units)[0] || [])) : null);
+  }
+  if (p.mode === "zelf")
+    return h("div", {class:"prompt slim"}, h("span", {class:"lbl"}, "Zelf schrijven"),
+      h("div", {class:"q", style:"font-size:19px"}, "Schrijf wat papa of mama je laat zien. Gebruik Spatie tussen de woorden."));
+  // onthouden
+  if (p.looking) {
+    const bar = h("div", {class:"bar"}, h("i", {style:`animation:shrink ${p.lookSec}s linear forwards`}));
+    return h("div", {class:"prompt"}, h("span", {class:"lbl"}, "Kijk goed!"), h("div", {class:"target ar", lang:"ar"}, renderWord(p.tgt.units)),
+      h("div", {style:"display:flex;flex-direction:column;gap:8px;align-items:center"}, bar,
+        h("button", {class:"small", onclick(){ sfx.tap(); clearTimers(); p.looking = false; p.hidden = true; renderPlay(); }}, "Ik weet het al")));
+  }
+  if (p.result && p.result.ok)
+    return h("div", {class:"prompt"}, h("span", {class:"lbl"}, "Het woord was:"), h("div", {class:"target ar", lang:"ar"}, renderWord(p.tgt.units)));
+  return h("div", {class:"prompt"}, h("span", {class:"lbl"}, "Weet je het nog?"), h("div", {class:"q"}, "Maak het woord uit je hoofd."),
+    h("button", {class:"small", onclick(){ sfx.tap(); p.peeks++; wp(p.word.id).peeks++; persist("voortgang"); startLook(3); renderPlay(); }}, "Nog even kijken"));
+}
+
+function renderPlay(){
+  const p = play;
+  renderHeaderDots();
+  const free = p.mode === "zelf", hoofd = p.mode === "hoofd";
+  const done = !free && p.result && p.result.ok;
+  const allOk = p.result && p.result.ok;
+  const per = p.result && !p.result.ok ? p.result.per : [];
+  const badIdx = new Set(per.filter(e => e.k).map(e => e.i));
+
+  const built = hoofd ? (p.units.length
+    ? h("div", {class:"built ar long hoofdtxt" + (allOk ? " ok" : ""), lang:"ar"}, splitWords(p.units).flatMap((wd, i) => [i ? " " : null,
+        h("span", {class: p.result && !p.result.ok && p.result.badWords && p.result.badWords.has(i) ? "wbad" : (p.result ? "wgood" : "")}, renderWord(wd))]))
+    : h("div", {class:"placeholder"}, "Tik de letters. Ze gaan vanzelf aan elkaar en de harakat komen vanzelf."))
+    : p.units.length
+    ? h("div", {class:"built ar" + (allOk ? " ok" : "") + (p.units.length > 10 ? " long" : ""), lang:"ar"}, renderWord(p.units))
+    : h("div", {class:"placeholder"}, "Tik op een letter om te beginnen");
+  const tiles = hoofd ? null : h("div", {class:"tiles"}, p.units.map((u, i) => {
+    let cls = "tile";
+    if (p.sel === i) cls += " sel";
+    if (u.sp) cls += " sp";
+    if (allOk) cls += " good"; else if (p.result) cls += badIdx.has(i) ? " bad" : " good";
+    return h("button", {class:cls, "aria-label":`Letter ${i+1}, ${FORM_FULL[u.f]}. Tik om te kiezen.`, onclick(){
+      if (done) return; sfx.tap(); p.sel = p.sel === i ? -1 : i; renderPlay(); }},
+      h("span", {class:"g ar", lang:"ar"}, tileText(u)), h("span", {class:"f"}, u.sp ? "spatie" : FORM_LBL[u.f]));
+  }));
+
+  let fb = h("div", {class:"feedback"}, p.sel >= 0 && !done ? `Letter ${p.sel+1} is gekozen. Tik een letter om hem te vervangen, of een teken om het erop te zetten.` : "");
+  let hintsEl = null, answerEl = null;
+  if (free && allOk) fb = h("div", {class:"feedback good"}, `Alle vormen kloppen${state.settings.name ? ", " + state.settings.name : ""}! ★ Kijk zelf nog of de letters en tekens goed zijn.`);
+  else if (done) fb = h("div", {class:"feedback good"}, `Goed zo${state.settings.name ? ", " + state.settings.name : ""}! ★`);
+  else if (p.result && p.result.msg) fb = h("div", {class:"feedback bad"}, p.result.msg);
+  else if (p.result) {
+    fb = h("div", {class:"feedback bad"}, free ? "Kijk naar de rode letters: die vorm klopt niet." : hoofd ? "Bijna! De rode woorden kloppen nog niet." : "Bijna! Kijk naar de rode letters.",
+      !p.showHints ? h("button", {class:"linkbtn", onclick(){ sfx.tap(); p.showHints = true; renderPlay(); }}, "Wat is er fout?") : null,
+      !free && p.attempts >= 2 && !p.revealed ? h("button", {class:"linkbtn", onclick(){ sfx.tap(); p.revealed = true; wp(p.word.id).shown++; persist("voortgang"); renderPlay(); }}, "Laat zien hoe het moet") : null);
+    if (p.showHints) hintsEl = h("ul", {class:"hints"}, (hoofd ? p.result.hints : hintLines(per, p.units)).map(t => h("li", null, t)));
+  }
+  if (p.revealed && !done && hoofd) answerEl = h("div", {class:"answer"}, "Zo is het goed:", h("span", {class:"ar", lang:"ar", dir:"rtl", style:"font-size:36px;line-height:1.9;color:var(--ink)"}, renderWord(p.tgt.units)));
+  else if (p.revealed && !done) answerEl = h("div", {class:"answer"}, "Zo is het goed:",
+    h("div", {class:"tiles"}, p.tgt.units.map(u => h("span", {class:"tile ghost"}, h("span", {class:"g ar", lang:"ar"}, tileText(u)), h("span", {class:"f"}, FORM_LBL[u.f])))));
+
+  const side = h("div", {class:"side"},
+    done ? h("button", {class:"btn next", onclick(){ sfx.tap(); nextWord(); }}, play.idx + 1 >= play.queue.length ? "Klaar! ▶" : "Volgende ▶")
+         : h("button", {class:"btn primary", style: free ? "font-size:22px" : null, onclick: free ? checkFree : hoofd ? checkHoofd : onCheck}, free ? "Controleer ✓" : "Klaar ✓"),
+    h("button", {class:"btn", disabled: done, onclick: onSpace}, "␣ Spatie"),
+    h("button", {class:"btn", disabled: done || !p.units.length, onclick: onDelete}, p.sel >= 0 ? "Deze weg" : "⌫ Wissen"),
+    h("button", {class:"btn", style:"font-size:16px", disabled: done || !p.units.length, onclick(){ sfx.del(); p.units = []; p.sel = -1; p.result = null; renderPlay(); }}, "Alles weg")
+  );
+
+  const locked = done || (p.mode === "onthouden" && p.looking);
+  const board = h("div", {class:"board" + (locked ? " locked" : "")},
+    h("div", {class:"letters"}, LETTERS.map(c => h("button", {class:"key ar", lang:"ar", "aria-label":`letter ${c}`, style: c === "ي" ? DOTTED_YA : null, onclick(){ onLetter(c); }}, c))),
+    h("div", {class:"row2"},
+      h("div", {class:"extras"}, EXTRA.map(c => h("button", {class:"key ex ar", lang:"ar", "aria-label":`letter ${c}`, onclick(){ onLetter(c); }}, c))),
+      p.mode === "hoofd" ? h("div", {class:"note", style:"align-self:center;font-size:17px;direction:ltr;text-align:right"}, "De harakat komen vanzelf als de letter goed is.") : h("div", {class:"harakat"}, HARAKAT.map(k => {
+        const t = targetUnit();
+        const on = t && (FLAGS[k.m] ? !!t[FLAGS[k.m]] : t.v === k.m);
+        return h("button", {class:"key mk" + (on ? " on" : ""), "aria-label":k.n, "aria-pressed":String(!!on), onclick(){ onMark(k.m); }},
+          h("span", {class:"m ar", lang:"ar"}, TAT + show_(k.m)), h("span", {class:"n"}, k.n));
+      })))
+  );
+
+  $("#vPlay").replaceChildren(h("div", {class:"play"},
+    renderPrompt(),
+    h("div", {class:"mid"},
+      h("div", {class:"build"}, h("div", {class:"slate"}, built, tiles), side),
+      fb, hintsEl, answerEl),
+    board));
+  renderPopup();
+}
+function targetUnit(){ const p = play; if (!p || !p.units.length) return null; const u = p.units[p.sel >= 0 ? p.sel : p.units.length - 1]; return u.sp ? null : u; }
+function onSpace(){
+  const p = play; p.result = null; p.showHints = false;
+  const u = {l:" ", sp:true, f:"los", sh:false, v:""};
+  if (p.sel >= 0) { p.units[p.sel] = u; p.sel = -1; }
+  else if (p.units.length && !p.units[p.units.length-1].sp) p.units.push(u);
+  else return;
+  if (p.mode === "hoofd") refreshForms(p.units);
+  sfx.tap(); renderPlay();
+}
+function checkHoofd(){
+  const p = play;
+  const kw = splitWords(p.units), tw = splitWords(p.tgt.units);
+  if (!kw.length) { p.result = {ok:false, per:[], msg:"Tik eerst letters."}; return renderPlay(); }
+  const useH = false; /* harakat komen vanzelf; alleen letters tellen */
+  const hints = [], badWords = new Set(), P = state.progress; P.letters = P.letters || {}; P.days = P.days || {};
+  const W = wp(p.word.id); W.tries++;
+  const markErr = (l, t) => { const L = P.letters[l] = P.letters[l] || {letter:0, vorm:0, haraka:0, f:{}}; L[t]++; W.e[t]++; };
+  for (let i = 0; i < Math.min(kw.length, tw.length); i++) {
+    const k = kw[i], t = tw[i];
+    let j = 0; while (j < k.length && j < t.length && sameLetter(k[j].l, t[j].l)) j++;
+    if (j < k.length || j < t.length) {
+      badWords.add(i);
+      if (j < t.length) markErr(t[j].l, "letter");
+      hints.push(j < k.length && j < t.length ? `Woord ${i+1}, letter ${j+1}: dat is niet de goede letter.`
+        : j < t.length ? `Woord ${i+1}: er mist nog iets aan het eind.` : `Woord ${i+1}: er staat een letter te veel.`);
+      continue;
+    }
+    if (useH) {
+      const m = k.findIndex((u, n) => (u.v || "") !== (t[n].v || "") || FLAG_KEYS.some(f => !!u[f] !== !!t[n][f]));
+      if (m >= 0) { badWords.add(i); markErr(t[m].l, "haraka"); hints.push(`Woord ${i+1}, letter ${m+1}: het teken klopt nog niet.`); }
+    }
+  }
+  if (kw.length < tw.length) { W.e.lengte++; hints.push(tw.length - kw.length === 1 ? "Er mist nog 1 woord." : `Er missen nog ${tw.length - kw.length} woorden.`); }
+  if (kw.length > tw.length) { W.e.lengte++; for (let i = tw.length; i < kw.length; i++) badWords.add(i); hints.push("Er staan woorden te veel."); }
+  hints.push("We tellen van rechts naar links.");
+  p.attempts++; p.showHints = false;
+  if (!badWords.size && kw.length === tw.length) {
+    const first = p.attempts === 1 && !p.peeks && !p.revealed;
+    W.solved++; if (first) W.first++;
+    const d = P.days[today()] = P.days[today()] || {w:0, g:0}; d.w++; if (first) d.g++;
+    play.res[play.idx] = first ? "gold" : "silver";
+    p.result = {ok:true}; sfx.good();
+  } else { p.result = {ok:false, per:[], badWords, hints}; sfx.bad(); }
+  persist("voortgang"); renderPlay();
+}
+function checkFree(){
+  const p = play;
+  if (!p.units.some(u => !u.sp)) { p.result = {ok:false, per:[], msg:"Tik eerst letters."}; return renderPlay(); }
+  const per = [];
+  p.units.forEach((u, i) => { if (!u.sp) { const f = expectedForm(p.units, i); if (u.f !== f) per.push({i, type:"vorm", k:u, t:{l:u.l, f}}); } });
+  const P = state.progress; P.letters = P.letters || {};
+  for (const e of per) {
+    const L = P.letters[e.t.l] = P.letters[e.t.l] || {letter:0, vorm:0, haraka:0, f:{}};
+    L.vorm++; L.f[e.t.f] = (L.f[e.t.f] || 0) + 1;
+  }
+  p.sel = -1; p.showHints = false;
+  if (per.length) { p.result = {ok:false, per}; sfx.bad(); } else { p.result = {ok:true}; sfx.good(); }
+  persist("voortgang");
+  renderPlay();
+}
+function posName(us, i){
+  let w = 1, n = 0;
+  for (let j = 0; j <= i && j < us.length; j++) { if (us[j].sp) { w++; n = 0; } else n++; }
+  return us.some(u => u.sp) ? `Woord ${w}, letter ${n}` : `Letter ${n}`;
+}
+function hintLines(per, us){
+  const lines = [];
+  for (const e of per) {
+    const at = posName(us, e.i);
+    if (e.type === "letter" && e.t.sp) lines.push(`${at}: hier hoort een spatie.`);
+    else if (e.type === "letter" && e.k.sp) lines.push("Hier hoort nog geen spatie.");
+    else if (e.type === "letter") lines.push(`${at}: dit is niet de goede letter.`);
+    if (e.type === "vorm") lines.push(`${at} (${e.k.l}): goede letter! Maar hier hoort de ${FORM_FULL[e.t.f]}.`);
+    if (e.type === "haraka") lines.push(`${at}: het teken boven of onder de letter klopt nog niet.`);
+  }
+  const mist = per.filter(e => e.type === "mist").length, teveel = per.filter(e => e.type === "teveel").length;
+  if (mist) lines.push(mist === 1 ? "Er mist nog 1 letter." : `Er missen nog ${mist} letters.`);
+  if (teveel) lines.push(teveel === 1 ? "Er staat 1 letter te veel." : `Er staan ${teveel} letters te veel.`);
+  lines.push("We tellen de letters van rechts naar links.");
+  return lines;
+}
+
+function splitWords(us){ const out = [[]]; for (const u of us) { if (u.sp) out.push([]); else out[out.length-1].push(u); } return out.filter(w => w.length); }
+function refreshForms(us){ us.forEach((u, i) => { if (!u.sp) u.f = expectedForm(us, i); }); }
+function onLetter(c){
+  if (play && play.mode === "hoofd") {
+    /* Uit het hoofd: geen vormkeuze, de letters gaan vanzelf aan elkaar. */
+    sfx.tap(); const p = play; p.result = null; p.showHints = false;
+    /* Is de letter goed op deze plek? Dan komen de harakat uit de tekst er vanzelf op. */
+    const wi = p.units.filter(u => u.sp).length;
+    let li = 0; for (let j = p.units.length - 1; j >= 0 && !p.units[j].sp; j--) li++;
+    const exp = (splitWords(p.tgt.units)[wi] || [])[li];
+    const u = canon({l:c, sh:false, v:""});
+    if (exp && sameLetter(u.l, exp.l) && !!u.md === !!exp.md) { const v = Object.assign({}, exp); delete v.f; p.units.push(v); }
+    else p.units.push(u);
+    refreshForms(p.units); renderPlay(); return;
+  }
+  const forms = formsFor(c);
+  if (forms.length === 1) return placeLetter(c, forms[0]);
+  sfx.tap();
+  play.popup = c; renderPopup();
+}
+function renderPopup(){
+  const o = $("#overlay");
+  if (!play || !play.popup) { o.hidden = true; o.replaceChildren(); return; }
+  const c = play.popup;
+  o.replaceChildren(h("div", {class:"pop", role:"dialog", "aria-label":"Kies de vorm", onclick(e){ e.stopPropagation(); }},
+    h("p", null, "Welke vorm hoort hier?"),
+    h("div", {class:"forms"}, formsFor(c).map(f => h("button", {class:"formbtn", onclick(){ placeLetter(c, f); }},
+      h("span", {class:"g", lang:"ar"}, tileText({l:c, sh:false, v:""}, f)), h("span", {class:"f"}, FORM_LBL[f]))))));
+  o.onclick = () => { play.popup = null; renderPopup(); };
+  o.hidden = false;
+  const first = o.querySelector(".formbtn"); if (first) first.focus();
+}
+function placeLetter(c, f){
+  sfx.pick();
+  const p = play; p.popup = null; p.result = null; p.showHints = false;
+  const u = canon({l:c, f, sh:false, v:""});
+  if (p.sel >= 0) { p.units[p.sel] = u; p.sel = -1; } else p.units.push(u);
+  renderPlay();
+}
+function onMark(m){
+  const t = targetUnit(); if (!t) return;
+  sfx.mark(); play.result = null; play.showHints = false;
+  if (FLAGS[m]) t[FLAGS[m]] = !t[FLAGS[m]]; else t.v = t.v === m ? "" : m;
+  renderPlay();
+}
+function onDelete(){
+  const p = play; if (!p.units.length) return;
+  sfx.del(); p.result = null; p.showHints = false;
+  if (p.sel >= 0) { p.units.splice(p.sel, 1); p.sel = -1; } else p.units.pop();
+  if (p.mode === "hoofd") refreshForms(p.units);
+  renderPlay();
+}
+function onCheck(){
+  const p = play;
+  if (!p.units.length) { p.result = {ok:false, per:[], msg:"Tik eerst letters."}; return renderPlay(); }
+  const useH = state.settings.checkHarakat && p.tgt.hasHarakat;
+  const per = [], T = p.tgt.units, n = Math.max(p.units.length, T.length);
+  for (let i = 0; i < n; i++) {
+    const k = p.units[i], t = T[i];
+    if (!k) { per.push({i, type:"mist", t}); continue; }
+    if (!t) { per.push({i, type:"teveel", k}); continue; }
+    if (!sameLetter(k.l, t.l)) per.push({i, type:"letter", k, t});
+    else if (k.sp) continue;
+    else if (k.f !== t.f) per.push({i, type:"vorm", k, t});
+    else if (useH && ((k.v || "") !== (t.v || "") || FLAG_KEYS.some(f => !!k[f] !== !!t[f]))) per.push({i, type:"haraka", k, t});
+  }
+  p.attempts++; p.sel = -1; p.showHints = false;
+  const W = wp(p.word.id); W.tries++;
+  const P = state.progress; P.letters = P.letters || {}; P.days = P.days || {};
+  for (const e of per) {
+    if (e.type === "mist" || e.type === "teveel") continue;
+    W.e[e.type]++;
+    const L = P.letters[e.t.l] = P.letters[e.t.l] || {letter:0, vorm:0, haraka:0, f:{}};
+    L[e.type]++;
+    if (e.type === "vorm") L.f[e.t.f] = (L.f[e.t.f] || 0) + 1;
+  }
+  if (per.some(e => e.type === "mist" || e.type === "teveel")) W.e.lengte++;
+  if (!per.length) {
+    const first = p.attempts === 1 && !p.peeks && !p.revealed;
+    W.solved++; if (first) W.first++;
+    const d = P.days[today()] = P.days[today()] || {w:0, g:0};
+    d.w++; if (first) d.g++;
+    play.res[play.idx] = first ? "gold" : "silver";
+    p.result = {ok:true}; clearTimers(); p.looking = false;
+    sfx.good();
+  } else {
+    p.result = {ok:false, per};
+    sfx.bad();
+  }
+  persist("voortgang");
+  renderPlay();
+}
+function endRound(){
+  clearTimers();
+  const gold = play.res.filter(r => r === "gold").length, all = play.queue.length;
+  sfx.round();
+  show("vDone");
+  $("#vDone").replaceChildren(h("div", {class:"done"},
+    h("h1", null, gold === all ? "Super! Alles in één keer goed!" : "Goed gedaan!"),
+    h("div", {class:"bigstars", "aria-label":`${gold} gouden sterren van ${all}`}, play.queue.map((_, i) =>
+      h("span", {class: play.res[i] || "none"}, "★"))),
+    h("p", {style:"font-size:22px;margin:0"}, `${gold} van de ${all} woorden in één keer goed.`),
+    h("p", {class:"note", style:"margin:0"}, "Gouden ster: in één keer goed. Grijze ster: goed na nog een keer proberen."),
+    h("div", {class:"row", style:"justify-content:center"},
+      h("button", {class:"go", onclick: startRound}, "Nog een ronde"),
+      h("button", {class:"btn", onclick(){ sfx.tap(); show("vStart"); renderStart(); }}, "Terug"))));
+}
+
+/* ================= Mijnrace ================= */
+const px = list => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">${list.map(([x,y,w,hh,c]) => `<rect x="${x}" y="${y}" width="${w}" height="${hh}" fill="${c}"/>`).join("")}</svg>`;
+const CART = c => [[1,8,14,1,"#3E434B"],[1,9,14,4,c],[2,9,12,1,"rgba(255,255,255,.25)"],[3,13,3,3,"#1E1E1E"],[10,13,3,3,"#1E1E1E"],[4,14,1,1,"#888"],[11,14,1,1,"#888"]];
+const SPRITES = {
+  miner: px([[4,1,8,2,"#F2A33A"],[3,3,10,1,"#C97F1E"],[7,1,2,2,"#FFF07A"],[5,4,6,4,"#E8B98A"],[6,5,1,1,"#2B2B2B"],[9,5,1,1,"#2B2B2B"],[7,7,2,1,"#A86E46"], ...CART("#8A8F98")]),
+  robo: px([[7,0,2,1,"#FF3B3B"],[3,1,10,7,"#2F3A47"],[4,2,8,5,"#C7D6E6"],[2,3,1,3,"#FF3B3B"],[13,3,1,3,"#FF3B3B"],
+    [5,3,2,2,"#FFD23F"],[9,3,2,2,"#FFD23F"],[6,4,1,1,"#2F3A47"],[10,4,1,1,"#2F3A47"],[6,6,4,1,"#2F3A47"],[7,6,1,1,"#FFFFFF"],[9,6,1,1,"#FFFFFF"], ...CART("#7B4FD1")]),
+  gem: px([[5,2,6,1,"#8BEAF5"],[4,3,8,1,"#4CC9DB"],[3,4,10,2,"#2BB3C8"],[4,6,8,2,"#1E97AB"],[5,8,6,2,"#16808F"],[6,10,4,2,"#106A77"],[7,12,2,1,"#0B5560"],[5,3,2,1,"#F0FDFF"],[4,4,2,1,"#C9F5FB"]])
+};
+function svgEl(str){ const t = document.createElement("template"); t.innerHTML = str.trim(); return t.content.firstChild; }
+const gemIcon = () => h("span", null, svgEl(SPRITES.gem));
+
+let race = null;
+function stopRaceLoop(){ if (race && race.raf) { cancelAnimationFrame(race.raf); race.raf = 0; } if (race) race.running = false; }
+function racePool(){
+  const g = state.settings.lastGroup;
+  return state.words.filter(forMode("race")).filter(w => g === "*" || (w.les || "Zonder les") === g)
+    .map(w => ({w, units: parseWord(w.ar).units})).filter(x => x.units.some(u => !u.sp));
+}
+function startRace(){
+  sfx.tap();
+  const kind = state.settings.raceKind || "letters";
+  const pool = kind === "een" ? LETTER_SETS[state.settings.letterSet || 0] : racePool();
+  if (!pool.length) { $("#startMsg").replaceChildren(h("p", {class:"warn"}, "Er zijn nog geen woorden in deze les.")); return; }
+  const P = state.progress;
+  const level = Math.min(1.6, Math.max(0.6, P.raceLevel || 1));
+  const need = kind === "een" ? 10 : 24; /* stappen tot de finish */
+  const tempo = state.settings.raceTempo ?? 150;
+  race = {kind, pool, idx: kind === "een" ? 0 : getPos(state.settings.lastGroup, pool.length), need, got:0, lock:false, rival:0,
+    sec: tempo ? tempo / 27 * need / level : Infinity, gems:0, running:false, raf:0, last:0, q:null};
+  show("vRace");
+  nextQ();
+  renderRace(true);
+  countdown();
+}
+/* Een stukje = letter in een vorm, met zijn tekens. */
+const PIECE_FLAGS = ["sh","da","md","rz","sw","sy"];
+const sig = u => (u.l === "ى" ? "ي" : u.l) + "|" + u.f + "|" + (u.v || "") + "|" + PIECE_FLAGS.map(f => u[f] ? 1 : 0).join("");
+const LOOKALIKE = [["ب","ت","ث","ن","ي"],["ج","ح","خ"],["د","ذ"],["ر","ز"],["س","ش"],["ص","ض"],["ط","ظ"],["ع","غ"],["ف","ق"],["ا","أ","إ","ٱ"],["و","ؤ"]];
+const SWAP_V = ["َ","ِ","ُ","ْ"];
+function trickFor(u){
+  const out = [];
+  const base = () => Object.assign({}, u);
+  const other = formsFor(u.l).filter(f => f !== u.f);
+  if (other.length) { const p = base(); p.f = other[Math.floor(Math.random() * other.length)]; out.push(p); }
+  const vs = SWAP_V.filter(v => v !== u.v);
+  { const p = base(); p.v = vs[Math.floor(Math.random() * vs.length)]; out.push(p); }
+  const grp = LOOKALIKE.find(g => g.includes(u.l));
+  if (grp) { const alts = grp.filter(l => l !== u.l && formsFor(l).includes(u.f)); if (alts.length) { const p = base(); p.l = alts[Math.floor(Math.random() * alts.length)]; out.push(p); } }
+  return out;
+}
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const bareL = u => u.l === "ا" && u.md ? "آ" : u.l;
+const normL = l => l === "ى" ? "ي" : l;
+function nextQ(){
+  if (race.kind === "een") {
+    /* Beginners: één letter, dezelfde zoeken tussen maximaal 4 knoppen. */
+    let t; do { t = race.pool[Math.floor(Math.random() * race.pool.length)]; } while (race.pool.length > 1 && t === race.lastL);
+    race.lastL = t;
+    const opts = [t];
+    const grp = (LOOKALIKE.find(g => g.includes(t)) || []).filter(l => l !== t && LETTERS.includes(l));
+    if (grp.length) opts.push(grp[Math.floor(Math.random() * grp.length)]);
+    while (opts.length < 4) { const l = LETTERS[Math.floor(Math.random() * LETTERS.length)]; if (!opts.includes(l)) opts.push(l); }
+    race.q = {target:t, solved:false, msg:"", bad:null, pieces: shuffle(opts).map((l, n) => ({u:{l, f:"los", sh:false, v:""}, id:n, used:false}))};
+    return;
+  }
+  const pick = race.pool[race.idx % race.pool.length];
+  race.idx = (race.idx + 1) % race.pool.length;
+  setPos(state.settings.lastGroup, race.idx);
+  const units = pick.units.map(u => Object.assign({}, u));
+  const real = units.filter(u => !u.sp);
+  let k = 0; while (units[k] && units[k].sp) k++;
+  if (race.kind === "letters") {
+    /* Kale losse letters zonder tekens: welke letters zitten in dit woord? */
+    const bare = real.map(u => ({l: bareL(u), f:"los", sh:false, v:""}));
+    const inWord = new Set(bare.map(u => normL(u.l)));
+    const tricks = [];
+    for (const u of shuffle(bare.slice())) {
+      const grp = LOOKALIKE.find(g => g.includes(u.l)) || [];
+      for (const l of shuffle(grp.slice())) if (!inWord.has(normL(l)) && !tricks.some(t => t.l === l) && tricks.length < 4) tricks.push({l, f:"los", sh:false, v:""});
+    }
+    while (tricks.length < 3) { const l = LETTERS[Math.floor(Math.random() * LETTERS.length)]; if (!inWord.has(normL(l)) && !tricks.some(t => t.l === l)) tricks.push({l, f:"los", sh:false, v:""}); }
+    race.q = {units, k, solved:false, msg:"", bad:null, pieces: shuffle([...bare, ...tricks].map((u, n) => ({u, id:n, used:false})))};
+    return;
+  }
+  const realSigs = new Set(real.map(sig));
+  const tricks = [], seen = new Set();
+  for (const u of shuffle(real.slice())) for (const t of trickFor(u)) {
+    const sg = sig(t);
+    if (!realSigs.has(sg) && !seen.has(sg) && tricks.length < 4) { seen.add(sg); tricks.push(t); }
+  }
+  race.q = {units, k, solved:false, msg:"", bad:null,
+    pieces: shuffle([...real, ...tricks].map((u, n) => ({u, id:n, used:false})))};
+}
+function countdown(){
+  const box = $("#cd"); let n = 3;
+  const step = () => {
+    if (!race || $("#vRace").hidden) return;
+    if (n > 0) { box.textContent = n; tone(520, 0, .12, "square", .06); n--; setTimeout(step, 750); }
+    else { box.textContent = "Start!"; tone(880, 0, .25, "square", .07); setTimeout(() => { box.textContent = ""; }, 600); race.running = true; race.last = performance.now(); race.raf = requestAnimationFrame(tick); }
+  };
+  step();
+}
+function tick(now){
+  if (!race || !race.running) return;
+  const dt = Math.min(0.1, (now - race.last) / 1000); race.last = now;
+  race.rival = Math.min(1, race.rival + dt / race.sec);
+  const rc = $("#rCart"); if (rc) rc.style.left = `calc(${race.rival} * (100% - 84px))`;
+  if (race.rival >= 1) return endRace(false);
+  race.raf = requestAnimationFrame(tick);
+}
+function renderTrack(){
+  const gems = [];
+  for (let k = 0; k < race.need; k++) gems.push(h("div", {class:"gem" + (k < race.got ? " got" : ""), style:`left:calc(${(k + .8) / race.need} * (100% - 84px) + 42px)`}, svgEl(SPRITES.gem)));
+  return h("div", {class:"mine", "aria-label":`Jij: ${race.got} van ${race.need}. Robo is onderweg.`},
+    h("div", {class:"lane top"}, h("div", {class:"rail"}), h("span", {class:"tag px"}, "Robo"),
+      h("div", {class:"cart rv", id:"rCart", style:`left:calc(${race.rival} * (100% - 84px))`}, h("span", {class:"ctag robo"}, "ROBO"), svgEl(SPRITES.robo))),
+    h("div", {class:"lane bot"}, h("div", {class:"rail"}), h("span", {class:"tag px"}, state.settings.name || "Jij"), gems,
+      h("div", {class:"cart", id:"pCart", style:`left:calc(${race.got / race.need} * (100% - 84px))`}, h("span", {class:"ctag me"}, (prof() && prof().tag) || "JIJ"), svgEl(SPRITES.miner))),
+    h("div", {class:"finish"}),
+    h("div", {class:"count px", id:"cd"}));
+}
+function raceHeader(){
+  $("#hmid").replaceChildren(h("span", {class:"gemcount px"}, gemIcon(), String(state.progress.diamonds || 0)), h("span", {class:"note", style:"margin-left:14px"}, `${race.got} / ${race.need}`));
+}
+function renderQuest(){
+  const q = race.q, us = q.units;
+  if (race.kind === "een") return h("div", {class:"quest", id:"quest"},
+    h("p", {class:"ask"}, "Zoek dezelfde letter:"),
+    h("div", {class:"bigletter ar" + (q.solved ? " ok" : ""), lang:"ar", style: q.target === "ي" ? DOTTED_YA : null}, q.target),
+    h("div", {class:"opts"}, q.pieces.map(p => h("button", {
+      class:"opt big1" + (q.bad === p.id ? " wrong" : "") + (q.solved && p.u.l === q.target ? " right" : ""),
+      disabled: q.solved, "aria-label":`letter ${p.u.l}`, onclick(){ answer(p); }},
+      h("span", {class:"g", lang:"ar", style: p.u.l === "ي" ? DOTTED_YA : null}, p.u.l)))),
+    h("div", {class:"msg" + (q.solved ? " good" : "")}, q.msg));
+  const built = q.solved
+    ? h("div", {class:"gapword ar ok", lang:"ar"}, renderWord(us))
+    : h("div", {class:"gapword ar", lang:"ar"}, h("span", null, renderWord(us.slice(0, q.k))), h("span", {class:"gap"}, "?"));
+  return h("div", {class:"quest", id:"quest"},
+    h("div", {class:"model"}, h("span", {class:"lbl"}, race.kind === "letters" ? "Zoek de letters van:" : "Bouw dit woord:"), h("span", {class:"ar target2", lang:"ar"}, renderWord(us))),
+    built,
+    h("div", {class:"opts pieces"}, q.pieces.map(p => h("button", {
+      class:"opt piece" + (p.used ? " used" : "") + (q.bad === p.id ? " wrong" : ""),
+      disabled: p.used || q.solved, "aria-label":`${p.u.l} ${FORM_FULL[p.u.f]}`, onclick(){ answer(p); }},
+      h("span", {class:"g", lang:"ar"}, tileText(p.u)), race.kind === "letters" ? null : h("span", {class:"f"}, FORM_LBL[p.u.f])))),
+    h("div", {class:"msg" + (q.solved || q.good ? " good" : "")}, q.msg));
+}
+function renderRace(full){
+  raceHeader();
+  if (full || !$("#quest")) {
+    $("#vRace").replaceChildren(h("div", {class:"race"}, renderTrack(), renderQuest()));
+  } else {
+    $("#quest").replaceWith(renderQuest());
+    const pc = $("#pCart"); if (pc) pc.style.left = `calc(${race.got / race.need} * (100% - 84px))`;
+    document.querySelectorAll(".gem").forEach((g, k) => g.classList.toggle("got", k < race.got));
+  }
+}
+function answer(p){
+  const q = race.q; if (q.solved || !race.running || race.lock) return;
+  if (race.kind === "een") {
+    if (p.u.l === q.target) {
+      q.solved = true; q.bad = null; race.got++; race.gems++;
+      state.progress.diamonds = (state.progress.diamonds || 0) + 1;
+      q.msg = ["Goed zo!", "Top!", "Super!", "Ja!", "Knap!"][Math.floor(Math.random() * 5)];
+      [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .08, .22, "square", .06));
+      renderRace(); persist("voortgang"); fireworks();
+      setTimeout(() => {
+        if (!race || $("#vRace").hidden) return;
+        if (race.got >= race.need) return endRace(true);
+        nextQ(); renderRace();
+      }, 800);
+    } else {
+      q.bad = p.id;
+      if (race.got > 0) { race.got--; if (race.gems > 0) { race.gems--; state.progress.diamonds = Math.max(0, (state.progress.diamonds || 0) - 1); } q.msg = "Oei, die is anders! Je karretje rolt terug."; }
+      else q.msg = "Oei, die is anders. Kijk nog eens goed!";
+      /* Voor de allerkleinsten: geen geluid bij een fout. */
+      race.lock = true; setTimeout(() => { if (race) race.lock = false; }, 700);
+      persist("voortgang"); renderRace();
+      const el = $("#quest"); if (el) el.classList.add("shake");
+    }
+    return;
+  }
+  const exp = q.units[q.k];
+  const ok = race.kind === "letters" ? normL(p.u.l) === normL(bareL(exp)) : sig(p.u) === sig(exp);
+  if (ok) {
+    p.used = true; q.bad = null; q.good = true;
+    q.units[q.k] = exp; q.k++; while (q.units[q.k] && q.units[q.k].sp) q.k++;
+    race.got++; race.gems++;
+    const P = state.progress; P.diamonds = (P.diamonds || 0) + 1;
+    tone(660, 0, .07, "square", .05); tone(990, .06, .1, "square", .05);
+    const wordDone = q.k >= q.units.length;
+    q.msg = wordDone ? ["Goed zo!", "Top!", "Super!", "Knap gedaan!"][Math.floor(Math.random() * 4)] : "";
+    if (wordDone) { q.solved = true; tone(1320, .14, .2, "square", .05); }
+    renderRace(); persist("voortgang");
+    if (race.got >= race.need) { race.running = false; return setTimeout(() => endRace(true), 700); }
+    if (wordDone) setTimeout(() => { if (!race || $("#vRace").hidden) return; nextQ(); renderRace(); }, 900);
+  } else {
+    q.bad = p.id; q.good = false;
+    const L = state.progress.letters[exp.l] = state.progress.letters[exp.l] || {letter:0, vorm:0, haraka:0, f:{}};
+    if (!sameLetter(p.u.l, exp.l)) { L.letter++; q.msg = "Oei, dat is een andere letter!"; }
+    else if (p.u.f !== exp.f) { L.vorm++; L.f[exp.f] = (L.f[exp.f] || 0) + 1; q.msg = "Oei, goede letter maar verkeerde vorm!"; }
+    else { L.haraka++; q.msg = "Oei, kijk goed naar het teken boven of onder de letter!"; }
+    /* Fout = karretje rolt terug. Zo heeft gokken geen zin. */
+    if (race.got > 0) {
+      race.got--;
+      if (race.gems > 0) { race.gems--; state.progress.diamonds = Math.max(0, (state.progress.diamonds || 0) - 1); }
+      q.msg += " Je karretje rolt terug.";
+    }
+    sfx.bad(); tone(300, .05, .25, "sawtooth", .04);
+    race.lock = true; setTimeout(() => { if (race) { race.lock = false; if (race.q === q && q.bad === p.id) { q.bad = null; } } }, 700);
+    persist("voortgang");
+    renderRace();
+    const el = $("#quest"); if (el) el.classList.add("shake");
+  }
+}
+/* Klein vuurwerk van pixelblokjes rond de grote letter. */
+function fireworks(){
+  if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const box = document.querySelector(".bigletter"); if (!box) return;
+  const r = box.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const colors = ["#F2B01E","#2BB3C8","#E5484D","#62B23F","#7B4FD1","#FF8A3D"];
+  for (let burst = 0; burst < 2; burst++) {
+    const ox = cx + (burst ? 90 : -90), oy = cy - 20;
+    for (let i = 0; i < 16; i++) {
+      const a = (Math.PI * 2 * i) / 16 + Math.random() * .3, d = 60 + Math.random() * 60;
+      const el = document.createElement("i");
+      el.className = "spark";
+      el.style.cssText = `left:${ox}px;top:${oy}px;background:${colors[(i + burst) % colors.length]};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d}px;animation-delay:${burst * 120}ms`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1100);
+    }
+  }
+}
+function endRace(win){
+  stopRaceLoop();
+  const P = state.progress;
+  P.races = P.races || {played:0, won:0}; P.races.played++;
+  const lvl = P.raceLevel || 1;
+  if (win) { P.races.won++; P.diamonds = (P.diamonds || 0) + 5; P.raceLevel = Math.min(1.6, lvl * 1.08); sfx.round(); }
+  else { P.raceLevel = Math.max(0.6, lvl * 0.9); tone(440, 0, .2, "triangle", .1); tone(392, .2, .3, "triangle", .1); }
+  persist("voortgang");
+  raceHeader();
+  $("#vRace").replaceChildren(h("div", {class:"result"},
+    h("div", {class:"bigsvg"}, svgEl(win ? SPRITES.gem : SPRITES.robo)),
+    h("h1", null, win ? "Gewonnen!" : "Robo was net iets sneller!"),
+    h("p", {style:"font-size:22px;margin:0"}, win
+      ? `Je hebt ${race.gems} diamanten gevonden, plus 5 extra omdat je won!`
+      : `Je hebt wel ${race.gems} diamanten gevonden. Nog een keer?`),
+    h("p", {class:"gemcount px", style:"font-size:26px"}, gemIcon(), `Totaal: ${P.diamonds || 0} diamanten`),
+    h("div", {class:"row", style:"justify-content:center"},
+      h("button", {class:"go", onclick: startRace}, "Nog een race"),
+      h("button", {class:"btn", onclick(){ sfx.tap(); show("vStart"); renderStart(); }}, "Terug"))));
+}
+
+/* ================= Ouderdeel ================= */
+let ptab = "woorden", edit = null, confirmDel = null, confirmReset = false;
+function openParent(){ clearTimers(); if (play) play.popup = null; renderPopup(); show("vParent"); renderParent(); }
+function renderParent(){
+  const tabs = [["woorden","Woorden"],["voortgang","Voortgang"],["instellingen","Instellingen"]];
+  const body = ptab === "woorden" ? panelWords() : ptab === "voortgang" ? panelProgress() : h("div", {style:"display:flex;flex-direction:column;gap:18px"}, panelProfiles(), panelSettings());
+  $("#vParent").replaceChildren(h("div", {class:"parent"},
+    h("div", {class:"row", style:"justify-content:space-between"},
+      h("h1", null, "Voor ouders"),
+      h("button", {class:"btn2", onclick(){ viewProf = null; if (active) { show("vStart"); renderStart(); } else renderWho(); }}, "Terug naar oefenen")),
+    h("div", {class:"tabs"}, tabs.map(([k,l]) => h("button", {class:"tab" + (ptab === k ? " on" : ""), onclick(){ ptab = k; renderParent(); }}, l))),
+    body,
+    h("div", {class:"save", id:"saveStatus"})));
+  updateSaveStatus();
+}
+function updateSaveStatus(){
+  const el = $("#saveStatus"); if (!el) return;
+  el.textContent = store.status === "fire" ? "Alles wordt gedeeld via Firebase: op elk apparaat dezelfde surahs, voortgang en diamanten."
+    : store.status === "fire-wait" ? "Verbinden met Firebase… Tot dan wordt alles op dit apparaat bewaard."
+    : store.status === "fire-error" ? "Geen verbinding met Firebase. Alles wordt op dit apparaat bewaard en later gedeeld zodra het lukt."
+    : store.status === "cloud" ? "Woorden en voortgang worden opgeslagen in je Claude-account."
+    : store.status === "full" ? "De opslag is vol. Verwijder oude woorden om weer op te slaan."
+    : store.status === "error" ? "Opslaan in je account lukte niet. Alles staat nog wel in deze browser."
+    : "Opgeslagen in deze browser op deze laptop.";
+}
+
+function panelWords(){
+  const e = edit || (edit = {id:null, ar:"", nl:"", les: state.settings.lastLes || "Sukūn – blad 1", kb:false});
+  const parsed = parseWord(e.ar);
+  const preview = h("div", {class:"preview", id:"pv"});
+  const fillPreview = () => {
+    const pw = parseWord(e.ar);
+    preview.replaceChildren(...(pw.units.length ? [
+      h("span", {class:"note"}, "Zo ziet het kind het:"),
+      h("span", {class:"ar", lang:"ar", style:"font-size:40px;line-height:1.5"}, renderWord(pw.units)),
+      h("div", {class:"tiles", style:"justify-content:flex-start"}, pw.units.map(u => h("span", {class:"tile ghost"}, h("span", {class:"g ar", lang:"ar"}, tileText(u)), h("span", {class:"f"}, FORM_LBL[u.f])))),
+    ] : [h("span", {class:"note"}, "Typ of tik een Arabisch woord. Hier zie je dan welke vormen erbij horen.")]),
+    pw.bad.length ? h("p", {class:"warn", style:"width:100%;margin:0"}, `Deze tekens ken ik niet en laat ik weg: ${pw.bad.join(" ")}`) : null,
+    pw.units.length && !pw.hasHarakat ? h("p", {class:"warn", style:"width:100%;margin:0"}, "Dit woord heeft geen harakat. Bij dit woord controleer ik de tekens dan niet.") : null);
+  };
+  const arIn = h("input", {id:"fAr", class:"arin", lang:"ar", dir:"rtl", value:e.ar, autocomplete:"off", oninput(ev){ e.ar = ev.target.value; fillPreview(); }});
+  const addChar = ch => { e.ar += ch; arIn.value = e.ar; fillPreview(); };
+  const kb = e.kb ? h("div", {class:"minikb"},
+    [...LETTERS, ...EXTRA].map(c => h("button", {type:"button", lang:"ar", onclick(){ addChar(c); }}, c)),
+    HARAKAT.map(k => h("button", {type:"button", class:"mk", lang:"ar", title:k.n, onclick(){ addChar(k.m); }}, TAT + show_(k.m))),
+    h("button", {type:"button", class:"bs", onclick(){ addChar(" "); }}, "spatie"),
+    h("button", {type:"button", class:"bs", onclick(){ const a = [...e.ar]; a.pop(); e.ar = a.join(""); arIn.value = e.ar; fillPreview(); }}, "⌫")) : null;
+  fillPreview();
+
+  const save = () => {
+    const pw = parseWord(e.ar);
+    if (!pw.units.length) { arIn.focus(); return; }
+    const les = (e.les || "").trim() || "Zonder les";
+    const old = state.words.find(w => w.id === e.id);
+    const rec = {id: e.id || uid(), ar: e.ar.trim(), nl: (e.nl || "").trim(), les};
+    if (old && old.kind) rec.kind = old.kind;
+    const i = state.words.findIndex(w => w.id === rec.id);
+    if (i >= 0) state.words[i] = rec; else state.words.push(rec);
+    state.settings.lastLes = les;
+    persist("woorden"); persist("instellingen");
+    edit = {id:null, ar:"", nl:"", les, kb:e.kb};
+    renderParent();
+    const f = $("#fAr"); if (f) f.focus();
+  };
+
+  const form = h("form", {class:"panel", onsubmit(ev){ ev.preventDefault(); save(); }},
+    h("h2", null, e.id ? "Woord aanpassen" : "Woord toevoegen"),
+    h("div", {class:"field"}, h("label", {for:"fAr"}, "Arabisch woord of zin, met harakat"), arIn),
+    h("div", {class:"row"},
+      h("button", {type:"button", class:"btn2 ghost", onclick(){ e.kb = !e.kb; renderParent(); }}, e.kb ? "Letterbord verbergen" : "Letterbord tonen"),
+      h("span", {class:"note"}, "Geen Arabisch toetsenbord? Tik de letters en tekens hieronder. Of plak het woord.")),
+    kb, preview,
+    h("div", {class:"grid2"},
+      h("div", {class:"field"}, h("label", {for:"fLes"}, "Les of week"), h("input", {id:"fLes", list:"lesList", value:e.les, oninput(ev){ e.les = ev.target.value; }}),
+        h("datalist", {id:"lesList"}, groups().map(g => h("option", {value:g})))),
+      h("div", {class:"field", style:"justify-content:flex-end"},
+        h("div", {class:"row"},
+          h("button", {type:"submit", class:"btn2"}, e.id ? "Opslaan" : "Toevoegen"),
+          e.id ? h("button", {type:"button", class:"btn2 ghost", onclick(){ edit = null; renderParent(); }}, "Annuleren") : null)))
+  );
+
+  const rows = [];
+  for (const g of groups()) {
+    rows.push(h("tr", null, h("td", {class:"grp", colspan:"3"}, g),
+      state.words.some(x => (x.les || "Zonder les") === g && x.file) ? h("td") : h("td", {style:"text-align:right"}, confirmDel === "les:" + g
+        ? [h("button", {class:"btn2 danger", onclick(){ const ids = state.words.filter(x => (x.les || "Zonder les") === g).map(x => x.id); state.words = state.words.filter(x => (x.les || "Zonder les") !== g); forget(ids); confirmDel = null; persist("woorden"); renderParent(); }}, "Ja, hele les weg"), " ",
+           h("button", {class:"btn2 ghost", onclick(){ confirmDel = null; renderParent(); }}, "Toch niet")]
+        : h("button", {class:"btn2 ghost", onclick(){ confirmDel = "les:" + g; renderParent(); }}, "Hele les verwijderen"))));
+    for (const w of state.words.filter(x => (x.les || "Zonder les") === g)) {
+      const p = state.progress.words[w.id];
+      rows.push(h("tr", null,
+        h("td", {class:"arw", lang:"ar"}, renderWord(parseWord(w.ar).units)),
+        h("td", null, scorePill(p)),
+        h("td", {class:"note"}, p && p.played ? `${p.played}× geoefend` : ""),
+        w.file ? h("td", {class:"note", style:"text-align:right"}, "staat in surahs.js") : h("td", {style:"text-align:right;white-space:nowrap"},
+          h("button", {class:"btn2 ghost", onclick(){ edit = {id:w.id, ar:w.ar, nl:w.nl || "", les:w.les || "", kb:false}; renderParent(); window.scrollTo(0,0); $("main").scrollTo(0,0); }}, "Aanpassen"), " ",
+          confirmDel === w.id
+            ? h("button", {class:"btn2 danger", onclick(){ state.words = state.words.filter(x => x.id !== w.id); forget([w.id]); confirmDel = null; persist("woorden"); renderParent(); }}, "Ja, verwijderen")
+            : h("button", {class:"btn2 ghost", onclick(){ confirmDel = w.id; renderParent(); }}, "Verwijderen"))));
+    }
+  }
+  const surahForm = h("form", {class:"panel", onsubmit(ev){ ev.preventDefault();
+      const txt = $("#fSurah").value, name = ($("#fSurahName").value || "").trim() || "Surah";
+      const parts = splitAyat(txt);
+      if (!parts.length) return;
+      for (const ar of parts) state.words.push({id: uid(), ar, nl:"", les: name, kind:"surah"});
+      persist("woorden"); edit = null; renderParent();
+    }},
+    h("h2", null, "Hele surah toevoegen"),
+    h("p", {class:"note", style:"margin:0"}, "Plak de tekst van een surah, bijvoorbeeld van quran.com of tanzil.net (Uthmani-schrift). Elke ayah wordt een aparte opdracht, in de goede volgorde. Gebruik daarna de oefenvorm Uit het hoofd."),
+    h("div", {class:"field"}, h("label", {for:"fSurahName"}, "Naam"), h("input", {id:"fSurahName", placeholder:"bijv. Surah al-Fatiha"})),
+    h("div", {class:"field"}, h("label", {for:"fSurah"}, "Tekst (met ayah-nummers of elke ayah op een nieuwe regel)"),
+      h("textarea", {id:"fSurah", dir:"rtl", lang:"ar", rows:"5", style:"font-family:var(--f-ar);font-size:26px;line-height:1.9;padding:6px 12px;border:2px solid var(--line);border-radius:10px"})),
+    h("div", {class:"row"}, h("button", {type:"submit", class:"btn2"}, "Surah toevoegen")));
+  return h("div", {style:"display:flex;flex-direction:column;gap:18px"}, form, surahForm,
+    h("div", {class:"panel"}, h("h2", null, `Alle woorden (${state.words.length})`),
+      state.words.length ? h("div", {class:"tblwrap"}, h("table", null, h("tbody", null, rows))) : h("p", {class:"note"}, "Nog geen woorden.")));
+}
+function forget(ids){
+  const b = ids.filter(id => /^b\d/.test(id));
+  if (b.length) { state.settings.removed = [...new Set([...(state.settings.removed || []), ...b])]; persist("instellingen"); }
+}
+function scorePill(p){
+  if (!p || !p.played) return h("span", {class:"pill new"}, "nog niet geoefend");
+  const r = (p.first || 0) / p.played;
+  return h("span", {class:"pill " + (r >= .75 ? "ok" : r >= .4 ? "mid" : "low")}, `${Math.round(r*100)}% in één keer goed`);
+}
+let viewProf = null;
+function panelProgress(){
+  if (!viewProf) viewProf = active || profiles()[0].id;
+  const P = state.allProgress[viewProf] = state.allProgress[viewProf] || EMPTY_PROGRESS(), days = P.days || {};
+  const who = h("div", {class:"chips"}, profiles().map(pf => h("button", {class:"chip" + (viewProf === pf.id ? " on" : ""), onclick(){ viewProf = pf.id; confirmReset = false; renderParent(); }}, pf.name)));
+  const d0 = days[today()] || {w:0, g:0};
+  let week = 0;
+  for (let i = 0; i < 7; i++) { const d = new Date(); d.setDate(d.getDate() - i); week += (days[d.toLocaleDateString("sv-SE")] || {w:0}).w; }
+  const ws = Object.values(P.words || {});
+  const played = ws.reduce((a,w) => a + (w.played || 0), 0), first = ws.reduce((a,w) => a + (w.first || 0), 0);
+  const letters = Object.entries(P.letters || {}).map(([l, v]) => ({l, ...v, tot:(v.letter||0) + (v.vorm||0) + (v.haraka||0)}))
+    .filter(x => x.tot).sort((a,b) => b.tot - a.tot).slice(0, 10);
+  const trouble = state.words.map(w => ({w, p:P.words[w.id]})).filter(x => x.p && x.p.played)
+    .sort((a,b) => (a.p.first / a.p.played) - (b.p.first / b.p.played));
+  const topForm = f => { const e = Object.entries(f || {}).sort((a,b) => b[1] - a[1])[0]; return e ? ` (vooral de ${FORM_FULL[e[0]]})` : ""; };
+
+  return h("div", {style:"display:flex;flex-direction:column;gap:18px"}, who,
+    h("div", {class:"stats"},
+      h("div", {class:"stat"}, h("b", null, d0.w), h("span", null, "woorden goed gemaakt vandaag")),
+      h("div", {class:"stat"}, h("b", null, week), h("span", null, "woorden goed gemaakt, laatste 7 dagen")),
+      h("div", {class:"stat"}, h("b", null, played ? Math.round(first / played * 100) + "%" : "–"), h("span", null, "in één keer goed, sinds het begin")),
+      h("div", {class:"stat"}, h("b", null, P.diamonds || 0), h("span", null, `diamanten · ${(P.races || {}).won || 0} van ${(P.races || {}).played || 0} races gewonnen`))),
+    h("div", {class:"panel"}, h("h2", null, "Lastige letters"),
+      letters.length ? h("div", {class:"hardl"}, letters.map(x => h("div", {class:"hl"},
+        h("span", {class:"ar", lang:"ar"}, x.l),
+        h("small", null, [x.vorm ? `${x.vorm}× verkeerde vorm${topForm(x.f)}` : null, x.letter ? `${x.letter}× verkeerde letter` : null, x.haraka ? `${x.haraka}× verkeerd teken` : null].filter(Boolean).flatMap((t,i) => i ? [h("br"), t] : [t])))))
+        : h("p", {class:"note", style:"margin:0"}, "Nog geen fouten gemaakt. Hier zie je straks met welke letters het moeilijk gaat.")),
+    h("div", {class:"panel"}, h("h2", null, "Per woord"),
+      trouble.length ? h("div", {class:"tblwrap"}, h("table", null,
+        h("thead", null, h("tr", null, ["Woord","Score","Geoefend","Verkeerde vorm","Verkeerde letter","Verkeerd teken","Laatst"].map(t => h("th", null, t)))),
+        h("tbody", null, trouble.map(({w,p}) => h("tr", null,
+          h("td", {class:"arw", lang:"ar"}, renderWord(parseWord(w.ar).units)),
+          h("td", null, scorePill(p)), h("td", null, p.played), h("td", null, p.e.vorm), h("td", null, p.e.letter), h("td", null, p.e.haraka),
+          h("td", {class:"note"}, p.last || ""))))))
+        : h("p", {class:"note", style:"margin:0"}, "Nog niets geoefend.")),
+    h("div", {class:"row"},
+      confirmReset
+        ? h("button", {class:"btn2 danger", onclick(){ state.allProgress[viewProf] = EMPTY_PROGRESS(); if (viewProf === active) state.progress = state.allProgress[active]; confirmReset = false; persist("voortgang"); renderParent(); }}, `Ja, voortgang van ${(profiles().find(x => x.id === viewProf) || {}).name} wissen`)
+        : h("button", {class:"btn2 ghost", onclick(){ confirmReset = true; renderParent(); }}, "Voortgang wissen"),
+      confirmReset ? h("button", {class:"btn2 ghost", onclick(){ confirmReset = false; renderParent(); }}, "Toch niet") : null));
+}
+function panelProfiles(){
+  const s = state.settings;
+  if (!s.profiles) s.profiles = clone(DEFAULT_PROFILES);
+  return h("div", {class:"panel"}, h("h2", null, "Kinderen en hun spellen"),
+    h("p", {class:"note", style:"margin:0"}, "Elk kind ziet alleen de spellen die hier aangevinkt zijn, en heeft eigen diamanten en voortgang."),
+    s.profiles.map(pf => h("div", {class:"profrow"},
+      h("div", {class:"field"}, h("label", {for:"pn-" + pf.id}, "Naam op de knop"), h("input", {id:"pn-" + pf.id, value:pf.name, oninput(ev){ pf.name = ev.target.value; persist("instellingen"); }})),
+      h("div", {class:"gamechecks"}, Object.entries(GAME_LBL).map(([g, l]) => h("label", {class:"toggle"},
+        h("input", {type:"checkbox", checked: pf.games.includes(g), onchange(ev){
+          pf.games = ev.target.checked ? [...pf.games, g] : pf.games.filter(x => x !== g);
+          if (!pf.games.length) pf.games = [g];
+          persist("instellingen"); renderParent(); }}), l))))));
+}
+function panelSettings(){
+  const s = state.settings;
+  const upd = (k, v) => { s[k] = v; persist("instellingen"); };
+  const sel = (id, k, opts) => h("select", {id, onchange(ev){ upd(k, Number(ev.target.value)); }},
+    opts.map(([v,l]) => h("option", {value:v, selected: s[k] === v}, l)));
+  return h("div", {class:"panel"},
+    h("h2", null, "Instellingen"),
+    h("div", {class:"grid2"},
+      h("div", {class:"field"}, h("label", {for:"sHide"}, "Onthouden: woord in beeld"), sel("sHide", "hideSec", [[3,"3 seconden"],[5,"5 seconden"],[8,"8 seconden"],[12,"12 seconden"]])),
+      h("div", {class:"field"}, h("label", {for:"sRound"}, "Woorden per ronde"), sel("sRound", "perRound", [[5,"5 woorden"],[8,"8 woorden"],[10,"10 woorden"],[15,"15 woorden"]])),
+      h("div", {class:"field"}, h("label", {for:"sRace"}, "Mijnrace: snelheid van Robo"), sel("sRace", "raceTempo", ROBO_SPEEDS))),
+    h("p", {class:"note", style:"margin:0"}, "Robo past zich ook zelf een beetje aan: wint je kind, dan wordt Robo iets sneller. Verliest hij, dan iets langzamer."),
+    h("label", {class:"toggle"}, h("input", {type:"checkbox", id:"sSound", checked:s.sound, onchange(ev){ upd("sound", ev.target.checked); }}), "Geluid aan"),
+    h("label", {class:"toggle"}, h("input", {type:"checkbox", id:"sHar", checked:s.checkHarakat, onchange(ev){ upd("checkHarakat", ev.target.checked); }}), "Harakat ook controleren"),
+    h("p", {class:"note", style:"margin:0"}, "Zet harakat-controle uit als je kind nog alleen met letters en vormen oefent."));
+}
+
+/* ================= Ouderknop: 2 seconden vasthouden ================= */
+(function(){
+  const b = $("#parentBtn"); let t = null;
+  const start = ev => { ev.preventDefault(); b.classList.add("holding"); t = setTimeout(() => { b.classList.remove("holding"); openParent(); }, 1600); };
+  const stop = () => { clearTimeout(t); b.classList.remove("holding"); };
+  b.addEventListener("pointerdown", start);
+  ["pointerup","pointerleave","pointercancel"].forEach(e => b.addEventListener(e, stop));
+  b.addEventListener("keydown", ev => { if ((ev.key === "Enter" || ev.key === " ") && !ev.repeat) start(ev); });
+  b.addEventListener("keyup", stop);
+  b.addEventListener("contextmenu", ev => ev.preventDefault());
+})();
+$("#stopBtn").addEventListener("click", () => { stopRaceLoop(); clearTimers(); if (play) play.popup = null; renderPopup(); show("vStart"); renderStart(); });
+
+/* ================= Volledig scherm ================= */
+(function(){
+  const b = $("#fsBtn");
+  const el = document.documentElement;
+  const can = document.fullscreenEnabled || document.webkitFullscreenEnabled;
+  if (!can) return;
+  b.hidden = false;
+  const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  const upd = () => { const on = isFs(); $("#fsTxt").textContent = on ? "Klein scherm" : "Volledig scherm"; b.setAttribute("aria-label", on ? "Volledig scherm uit" : "Volledig scherm"); };
+  b.addEventListener("click", async () => {
+    sfx.tap();
+    try {
+      if (isFs()) await (document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen());
+      else await (el.requestFullscreen ? el.requestFullscreen() : el.webkitRequestFullscreen());
+    } catch(e) { b.hidden = true; }
+    upd();
+  });
+  document.addEventListener("fullscreenchange", upd);
+  document.addEventListener("webkitfullscreenchange", upd);
+})();
+
+const st = document.createElement("style");
+st.textContent = "@keyframes shrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}";
+document.head.append(st);
+
+$("#whoBtn").addEventListener("click", () => { stopRaceLoop(); clearTimers(); if (play) play.popup = null; renderPopup(); renderWho(); });
+if (fileSurahsChanged) persist("woorden");
+renderWho();
+if (window.FIREBASE_CONFIG && window.GEZIN_ID) connectFirebase(); else connect();
+</script>
+</body>
+</html>
