@@ -392,8 +392,7 @@ td.arw{font-family:var(--f-ar);font-size:28px;direction:rtl;text-align:right;whi
     <button class="hbtn" id="whoBtn" hidden aria-label="Ander kind kiezen"></button>
     <button class="hbtn" id="fsBtn" hidden aria-label="Volledig scherm"><span class="fsi" aria-hidden="true">⛶</span> <span id="fsTxt" class="lbl">Volledig scherm</span></button>
     <button class="hbtn" id="stopBtn" hidden aria-label="Stoppen"><span aria-hidden="true">✕</span> <span class="lbl">Stoppen</span></button>
-    <span class="holdtip" id="holdtip">Ouders: knop 2 sec. vasthouden</span>
-    <button class="hbtn hold" id="parentBtn" aria-label="Ouders: houd 2 seconden ingedrukt"><i class="fill"></i><span>Ouders</span></button>
+    <button class="hbtn hold" id="parentBtn" aria-label="Ouders"><i class="fill"></i><span>Ouders</span></button>
   </header>
   <main>
     <section class="view" id="vWho"></section>
@@ -1667,7 +1666,6 @@ function panelSettings(){
   const stop = () => {
     if (!t) return;
     clearTimeout(t); t = null; b.classList.remove("holding");
-    if (Date.now() - t0 < 1500) { label.textContent = "Vasthouden…"; setTimeout(() => { label.textContent = "Ouders"; }, 1500); }
   };
   b.addEventListener("pointerdown", start);
   ["pointerup","pointercancel"].forEach(e => b.addEventListener(e, stop));
