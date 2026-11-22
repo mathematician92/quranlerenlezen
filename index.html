@@ -43,7 +43,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .ar{font-family:var(--f-ar);font-feature-settings:"kern"}
 [hidden]{display:none!important}
 
-#app{height:100%;display:grid;grid-template-rows:auto 1fr}
+#app{height:100%;height:100dvh;display:grid;grid-template-rows:auto 1fr}
 header{display:flex;align-items:center;gap:16px;padding:10px 20px;background:var(--card);border-bottom:2px solid var(--line)}
 .brand{font-weight:800;font-size:22px;color:var(--accent);display:flex;align-items:center;gap:8px;white-space:nowrap}
 .brand .ar{font-size:26px}
@@ -54,7 +54,7 @@ header{display:flex;align-items:center;gap:16px;padding:10px 20px;background:var
 .dot.silver{color:#9AA8A3}
 .hbtn{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:6px 14px;font-weight:700;font-size:16px;white-space:nowrap}
 .fsi{font-size:18px;line-height:1}
-.hold{position:relative;overflow:hidden}
+.hold{position:relative;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .hold .fill{position:absolute;inset:0;background:var(--accent-soft);transform-origin:left;transform:scaleX(0)}
 .hold span{position:relative}
 .hold.holding .fill{transition:transform 1.6s linear;transform:scaleX(1)}
@@ -283,6 +283,102 @@ td.arw{font-family:var(--f-ar);font-size:28px;direction:rtl;text-align:right;whi
   .minikb{grid-template-columns:repeat(9,1fr)}
   .holdtip{display:none}
 }
+/* Telefoon (ook de buitenkant van een Fold) */
+@media (max-width:700px){
+  header{flex-wrap:wrap;gap:6px;padding:6px 10px}
+  .brand{font-size:18px}
+  .brand .bt{display:none}
+  .hmid{order:10;flex-basis:100%;justify-content:center}
+  .hmid .note{display:none}
+  .dot{font-size:18px}
+  .hbtn{padding:5px 10px;font-size:15px}
+  .hbtn .lbl{display:none}
+  .start{padding:16px 12px 30px;gap:16px}
+  .start h1{font-size:30px}
+  .start h2{font-size:19px}
+  .who{padding:20px 12px;gap:18px}
+  .who h1{font-size:30px}
+  .whos{gap:14px}
+  .whob{padding:16px 14px;flex-direction:row;text-align:left;gap:14px}
+  .whob b{font-size:22px}
+  .whob small{font-size:14px}
+  .whoicon{width:64px;height:64px;flex:none}
+  .whoicon .ar{font-size:32px}
+  .onemode{padding:10px 14px;gap:12px}
+  .onemode b{font-size:22px}
+  .chip{padding:6px 14px;font-size:16px}
+  .go{font-size:24px;padding:12px 30px}
+  .play{padding:8px 8px 10px;gap:6px}
+  .prompt{padding:6px 10px;gap:8px;flex-wrap:wrap;min-height:0}
+  .prompt .lbl{font-size:15px}
+  .prompt .target{font-size:clamp(34px,7vh,56px)}
+  .prompt .q{font-size:16px!important}
+  .build{grid-template-columns:1fr;gap:6px}
+  .side{width:auto;flex-direction:row;flex-wrap:wrap;gap:6px}
+  .side .btn{flex:1 1 auto;font-size:15px;padding:8px 10px}
+  .btn.primary,.btn.next{font-size:19px!important;flex:2 1 100%}
+  .slate{padding:4px 8px 8px}
+  .built{font-size:clamp(38px,8vh,60px)}
+  .built.long{font-size:clamp(28px,5vh,44px)}
+  .placeholder{font-size:17px;line-height:1.6;padding:10px 0}
+  .tiles{gap:5px;min-height:0}
+  .tile{min-width:40px;padding:0 6px 2px}
+  .tile .g{font-size:24px}
+  .feedback{font-size:16px;min-height:0}
+  .hints{font-size:15px}
+  .board{gap:5px}
+  .key{height:clamp(36px,5.4vh,50px);font-size:clamp(21px,3.4vh,28px);border-radius:9px}
+  .letters,.extras{gap:5px}
+  .harakat{grid-template-columns:repeat(7,1fr);gap:5px}
+  .key.mk .n{display:none}
+  .row2{gap:5px}
+  .pop{padding:12px;margin:0 8px}
+  .forms{gap:8px}
+  .formbtn{width:clamp(62px,20vw,120px);height:auto;aspect-ratio:.85}
+  .formbtn .g{font-size:clamp(32px,10vw,56px)}
+  .formbtn .f{font-size:15px}
+  .race{padding:8px;gap:8px}
+  .mine{height:clamp(150px,22vh,200px)}
+  .lane{left:8px;right:26px}
+  .cart{width:clamp(34px,5.5vh,46px)}
+  .ctag{font-size:11px;top:-14px;padding:2px 5px}
+  .gem{width:12px;height:12px;bottom:14px}
+  .finish{width:12px;background-size:12px 12px}
+  .quest{justify-content:flex-start;overflow:auto;padding:8px;gap:6px}
+  .quest .ask{font-size:19px}
+  .model{flex-wrap:wrap;justify-content:center;gap:6px}
+  .target2{font-size:clamp(30px,6vh,46px)}
+  .gapword{font-size:clamp(38px,7vh,60px)}
+  .opts{gap:8px}
+  .piece{width:clamp(62px,19vw,96px);height:clamp(72px,10vh,104px)}
+  .piece .g{font-size:clamp(28px,4.6vh,40px)}
+  .opt.big1{width:clamp(100px,38vw,150px);height:clamp(96px,14vh,140px)}
+  .bigletter{font-size:clamp(70px,13vh,120px)}
+  .msg{font-size:16px}
+  .result h1,.done h1{font-size:34px}
+  .parent{padding:14px 10px 40px;gap:14px}
+  .parent h1{font-size:26px}
+  .panel{padding:14px}
+  .profrow{grid-template-columns:1fr;gap:8px}
+  .gamechecks{padding-top:0}
+  th,td{padding:6px}
+  td.arw{font-size:24px}
+  .stat b{font-size:28px}
+}
+@media (max-width:380px){
+  .brand{display:none}
+  header{gap:5px}
+  .hbtn{padding:5px 8px}
+}
+/* Liggend en weinig hoogte */
+@media (max-height:540px){
+  .key{height:34px;font-size:22px}
+  .key.mk .n{display:none}
+  .prompt{min-height:0;padding:4px 12px}
+  .prompt .target{font-size:40px}
+  .built{font-size:44px}
+  .mine{height:120px}
+}
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
 }
@@ -291,11 +387,11 @@ td.arw{font-family:var(--f-ar);font-size:28px;direction:rtl;text-align:right;whi
 <body>
 <div id="app">
   <header>
-    <div class="brand"><span class="ar" lang="ar">أ ب ت</span> Letterbord</div>
+    <div class="brand"><span class="ar" lang="ar">أ ب ت</span> <span class="bt">Letterbord</span></div>
     <div class="hmid" id="hmid"></div>
     <button class="hbtn" id="whoBtn" hidden aria-label="Ander kind kiezen"></button>
-    <button class="hbtn" id="fsBtn" hidden aria-label="Volledig scherm"><span class="fsi" aria-hidden="true">⛶</span> <span id="fsTxt">Volledig scherm</span></button>
-    <button class="hbtn" id="stopBtn" hidden>Stoppen</button>
+    <button class="hbtn" id="fsBtn" hidden aria-label="Volledig scherm"><span class="fsi" aria-hidden="true">⛶</span> <span id="fsTxt" class="lbl">Volledig scherm</span></button>
+    <button class="hbtn" id="stopBtn" hidden aria-label="Stoppen"><span aria-hidden="true">✕</span> <span class="lbl">Stoppen</span></button>
     <span class="holdtip" id="holdtip">Ouders: knop 2 sec. vasthouden</span>
     <button class="hbtn hold" id="parentBtn" aria-label="Ouders: houd 2 seconden ingedrukt"><i class="fill"></i><span>Ouders</span></button>
   </header>
@@ -698,7 +794,7 @@ function choose(id){
   Object.assign(s, {lastMode:"overschrijven", lastGroup:"*", raceKind:"letters", raceTempo:150, pos:{}, letterSet:0}, (s.prof || {})[id] || {});
   s.name = pf.name;
   state.progress = state.allProgress[id] = state.allProgress[id] || EMPTY_PROGRESS();
-  $("#whoBtn").textContent = "👤 " + pf.name.split(" ")[0] + " · wissel";
+  $("#whoBtn").replaceChildren(h("span", {"aria-hidden":"true"}, "👤 "), pf.name.split(" ")[0], h("span", {class:"lbl"}, " · wissel"));
   show("vStart"); renderStart();
 }
 function renderStart(){
@@ -1391,13 +1487,13 @@ function panelWords(){
   const preview = h("div", {class:"preview", id:"pv"});
   const fillPreview = () => {
     const pw = parseWord(e.ar);
-    preview.replaceChildren(...(pw.units.length ? [
+    preview.replaceChildren(...[...(pw.units.length ? [
       h("span", {class:"note"}, "Zo ziet het kind het:"),
       h("span", {class:"ar", lang:"ar", style:"font-size:40px;line-height:1.5"}, renderWord(pw.units)),
       h("div", {class:"tiles", style:"justify-content:flex-start"}, pw.units.map(u => h("span", {class:"tile ghost"}, h("span", {class:"g ar", lang:"ar"}, tileText(u)), h("span", {class:"f"}, FORM_LBL[u.f])))),
     ] : [h("span", {class:"note"}, "Typ of tik een Arabisch woord. Hier zie je dan welke vormen erbij horen.")]),
     pw.bad.length ? h("p", {class:"warn", style:"width:100%;margin:0"}, `Deze tekens ken ik niet en laat ik weg: ${pw.bad.join(" ")}`) : null,
-    pw.units.length && !pw.hasHarakat ? h("p", {class:"warn", style:"width:100%;margin:0"}, "Dit woord heeft geen harakat. Bij dit woord controleer ik de tekens dan niet.") : null);
+    pw.units.length && !pw.hasHarakat ? h("p", {class:"warn", style:"width:100%;margin:0"}, "Dit woord heeft geen harakat. Bij dit woord controleer ik de tekens dan niet.") : null].filter(Boolean));
   };
   const arIn = h("input", {id:"fAr", class:"arin", lang:"ar", dir:"rtl", value:e.ar, autocomplete:"off", oninput(ev){ e.ar = ev.target.value; fillPreview(); }});
   const addChar = ch => { e.ar += ch; arIn.value = e.ar; fillPreview(); };
@@ -1560,10 +1656,21 @@ function panelSettings(){
 /* ================= Ouderknop: 2 seconden vasthouden ================= */
 (function(){
   const b = $("#parentBtn"); let t = null;
-  const start = ev => { ev.preventDefault(); b.classList.add("holding"); t = setTimeout(() => { b.classList.remove("holding"); openParent(); }, 1600); };
-  const stop = () => { clearTimeout(t); b.classList.remove("holding"); };
+  let t0 = 0;
+  const label = b.querySelector("span");
+  const start = ev => {
+    ev.preventDefault(); t0 = Date.now();
+    if (ev.pointerId != null && b.setPointerCapture) { try { b.setPointerCapture(ev.pointerId); } catch(e) {} }
+    b.classList.add("holding");
+    t = setTimeout(() => { t = null; b.classList.remove("holding"); label.textContent = "Ouders"; openParent(); }, 1600);
+  };
+  const stop = () => {
+    if (!t) return;
+    clearTimeout(t); t = null; b.classList.remove("holding");
+    if (Date.now() - t0 < 1500) { label.textContent = "Vasthouden…"; setTimeout(() => { label.textContent = "Ouders"; }, 1500); }
+  };
   b.addEventListener("pointerdown", start);
-  ["pointerup","pointerleave","pointercancel"].forEach(e => b.addEventListener(e, stop));
+  ["pointerup","pointercancel"].forEach(e => b.addEventListener(e, stop));
   b.addEventListener("keydown", ev => { if ((ev.key === "Enter" || ev.key === " ") && !ev.repeat) start(ev); });
   b.addEventListener("keyup", stop);
   b.addEventListener("contextmenu", ev => ev.preventDefault());
